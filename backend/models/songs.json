@@ -1,0 +1,12 @@
+[
+  { "id": 0, "label": "Attention-Charlie_Puth", "title": "Attention", "artist": "Charlie Puth" },
+  { "id": 1, "label": "Blinding_Lights-The_Weeknd", "title": "Blinding Lights", "artist": "The Weeknd" },
+  { "id": 2, "label": "I_Was_Never_There-The_Weeknd", "title": "I Was Never There", "artist": "The Weeknd" },
+  { "id": 3, "label": "Mystery_of_Love-Sufjan_Stevens", "title": "Mystery of Love", "artist": "Sufjan Stevens" },
+  { "id": 4, "label": "Positions-Ariana_Grande", "title": "Positions", "artist": "Ariana Grande" },
+  { "id": 5, "label": "Should_Have_Known_Better-Sufjan_Stevens", "title": "Should Have Known Better", "artist": "Sufjan Stevens" },
+  { "id": 6, "label": "Stereo_love-Edward_Maya", "title": "Stereo Love", "artist": "Edward Maya" },
+  { "id": 7, "label": "The_Hills-The_Weeknd", "title": "The Hills", "artist": "The Weeknd" },
+  { "id": 8, "label": "Timeless-The_Weeknd", "title": "Timeless", "artist": "The Weeknd" },
+  { "id": 9, "label": "We_Don't_Talk_Any_More-Charlie_Puth", "title": "We Don't Talk Any More", "artist": "Charlie Puth" }
+]

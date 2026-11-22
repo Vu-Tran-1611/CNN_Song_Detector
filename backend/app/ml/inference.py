@@ -18,26 +18,37 @@ class Prediction:
     chunk_predictions: List[int]  # winning label of each 5-second chunk
 
 
-def split_into_clips(waveform: torch.Tensor) -> List[torch.Tensor]:
+def split_into_clips(waveform: torch.Tensor, overlap_last: bool = False) -> List[torch.Tensor]:
     """Cut a (1, n_samples) waveform into CLIP_SAMPLES-long clips.
 
-    Same as the notebook's predict_song: the last partial clip is kept and
-    padded with zeros (silence) up to CLIP_SAMPLES.
+    overlap_last=False (default) is the notebook's predict_song behaviour:
+    the last partial clip is kept and padded with zeros (silence).
+
+    overlap_last=True: when the recording is at least one clip long, the
+    last partial clip is replaced by the final CLIP_SAMPLES of the recording,
+    overlapping the previous clip, so no clip contains added silence.
+    Example: 7 s -> [0-5 s] and [2-7 s]. Recordings shorter than one clip
+    are still padded.
     """
     total_samples = waveform.shape[1]
     clips = []
     for start in range(0, total_samples, CLIP_SAMPLES):
         clip = waveform[:, start : start + CLIP_SAMPLES]
         if clip.shape[1] < CLIP_SAMPLES:
-            clip = F.pad(clip, (0, CLIP_SAMPLES - clip.shape[1]))
+            if overlap_last and total_samples >= CLIP_SAMPLES:
+                clip = waveform[:, total_samples - CLIP_SAMPLES :]
+            else:
+                clip = F.pad(clip, (0, CLIP_SAMPLES - clip.shape[1]))
         clips.append(clip)
     return clips
 
 
 @torch.inference_mode()
-def predict(model: torch.nn.Module, waveform: torch.Tensor, device="cpu") -> Prediction:
+def predict(
+    model: torch.nn.Module, waveform: torch.Tensor, device="cpu", overlap_last: bool = False
+) -> Prediction:
     """Run the model on every 5-second chunk and average the softmax probabilities."""
-    clips = split_into_clips(waveform)
+    clips = split_into_clips(waveform, overlap_last=overlap_last)
     if not clips:
         raise ValueError("The recording is empty.")
 

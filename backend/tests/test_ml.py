@@ -80,3 +80,30 @@ def test_predict_rejects_empty_audio(checkpoint):
     model, _ = checkpoint
     with pytest.raises(ValueError):
         predict(model, torch.zeros(1, 0))
+
+
+# --- overlap_last=True (used by the API) -------------------------------------
+def ramp(seconds: float) -> torch.Tensor:
+    return torch.arange(int(seconds * SAMPLE_RATE), dtype=torch.float32).unsqueeze(0)
+
+
+def test_overlap_last_uses_final_five_seconds_without_padding():
+    waveform = ramp(7.0)
+    clips = split_into_clips(waveform, overlap_last=True)
+    assert len(clips) == 2
+    assert torch.equal(clips[0], waveform[:, :CLIP_SAMPLES])
+    assert torch.equal(clips[1], waveform[:, -CLIP_SAMPLES:])  # [2 s - 7 s]
+
+
+@pytest.mark.parametrize("seconds, expected_clips", [(10.0, 2), (12.0, 3), (5.0, 1)])
+def test_overlap_last_clip_counts(seconds, expected_clips):
+    waveform = ramp(seconds)
+    clips = split_into_clips(waveform, overlap_last=True)
+    assert len(clips) == expected_clips
+    assert torch.equal(clips[-1], waveform[:, -CLIP_SAMPLES:])
+
+
+def test_overlap_last_still_pads_short_recordings():
+    clips = split_into_clips(torch.ones(1, 3 * SAMPLE_RATE), overlap_last=True)
+    assert len(clips) == 1
+    assert clips[0][0, 3 * SAMPLE_RATE :].eq(0).all()
