@@ -2,6 +2,29 @@
 
 A small PyTorch project that listens to a short audio clip (e.g. 10 seconds from the microphone) and predicts which of 10 known songs is playing, using a CNN trained on mel spectrograms.
 
+The project is being turned into a web app: a Next.js frontend with a Shazam-style "tap to listen" button, and a FastAPI backend that runs the model.
+
+## Repository layout
+
+```
+CNN_Song_Detector/
+├── research/    # Jupyter notebook: data prep, training, evaluation, live mic test
+│   ├── song_detector.ipynb
+│   └── song_cnn_model.pth
+├── backend/     # FastAPI service that serves the model (in progress)
+└── frontend/    # Next.js web app (in progress)
+```
+
+## Roadmap
+
+1. ✅ Restructure the repo into `research/`, `backend/`, `frontend/`
+2. Extract the ML code (audio loading, mel spectrogram, CNN) into `backend/` and check that its results match the notebook
+3. FastAPI service: `POST /api/predict`, `GET /api/health`, `GET /api/songs`, plus a "not sure" confidence threshold
+4. Next.js app with microphone recording (raw audio → WAV, browser voice processing turned off)
+5. Connect frontend and backend: listen → analyze → result
+6. UI design and polish
+7. Deploy: backend (Docker) on Hugging Face Spaces, frontend on Vercel
+
 ## Songs (labels)
 
 | Label | Song |
@@ -17,7 +40,7 @@ A small PyTorch project that listens to a short audio clip (e.g. 10 seconds from
 | 8 | Timeless – The Weeknd |
 | 9 | We Don't Talk Any More – Charlie Puth |
 
-## Pipeline (`song_detector.ipynb`)
+## Pipeline (`research/song_detector.ipynb`)
 
 1. **Data sources** – two versions of every song:
    - `original/` – the studio MP3s
@@ -32,19 +55,16 @@ A small PyTorch project that listens to a short audio clip (e.g. 10 seconds from
 9. **Result** – **94.68 %** accuracy on the held-out test clips (178 / 188).
 10. **Inference** – a recording is split into 5-second chunks, each chunk is classified, and the softmax probabilities are averaged to give the final song plus a confidence score. `predict_live()` records from the microphone (`sounddevice`) and predicts right away.
 
-## Files
-
-- `song_detector.ipynb` – the full pipeline: preprocessing, training, evaluation, live prediction
-- `song_cnn_model.pth` – trained weights plus the label↔song mappings
-
 Not included in the repo (see `.gitignore`):
-- `original/`, `recording/` – the song audio is copyrighted and can't be shared. Add your own MP3s, named `Song_Title-Artist.mp3`.
-- `preprocessed_mels/` – about 560 MB, and the notebook regenerates it.
+- `research/original/`, `research/recording/` – the song audio is copyrighted and can't be shared. Add your own MP3s, named `Song_Title-Artist.mp3`.
+- `research/preprocessed_mels/` – about 560 MB, and the notebook regenerates it.
 
-## Setup
+## Running the notebook
 
 ```bash
 pip install torch torchaudio numpy pandas sounddevice soundfile jupyter
+cd research
+jupyter notebook song_detector.ipynb
 ```
 
-Put 10 songs in both `original/` and `recording/`, start Jupyter from the repo folder (`BASE_DIR` is the current working directory), and run the notebook from top to bottom.
+`BASE_DIR` is the current working directory, so start Jupyter from inside `research/`. Put 10 songs in both `research/original/` and `research/recording/`, then run the notebook from top to bottom.
