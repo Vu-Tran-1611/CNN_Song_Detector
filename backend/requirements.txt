@@ -1,0 +1,5 @@
+# Same versions as the training environment (research/song_detector.ipynb)
+torch==2.12.0
+torchaudio==2.11.0
+soundfile==0.14.0
+numpy==2.5.5
