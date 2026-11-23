@@ -5,7 +5,7 @@ SONG_CORS_ORIGINS='["https://my-app.vercel.app"]'.
 
 from functools import lru_cache
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     songs_path: Path = BACKEND_DIR / "models" / "songs.json"
 
     cors_origins: List[str] = ["http://localhost:3000"]
+    cors_origin_regex: Optional[str] = None
 
 
 @lru_cache

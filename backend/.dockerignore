@@ -1,0 +1,12 @@
+.venv/
+.parity/
+.pytest_cache/
+**/__pycache__/
+*.pyc
+tests/
+scripts/
+Dockerfile
+.dockerignore
+README.md
+requirements-dev.txt
+pyproject.toml

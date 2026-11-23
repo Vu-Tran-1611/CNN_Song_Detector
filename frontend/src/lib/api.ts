@@ -55,3 +55,24 @@ export async function predict(wav: Blob): Promise<Prediction> {
   form.append("audio", wav, "recording.wav");
   return request<Prediction>("/api/predict", { method: "POST", body: form }, PREDICT_TIMEOUT_MS);
 }
+
+const SERVER_DOWN_CODES = new Set(["network", "timeout"]);
+
+export async function getSongsWhenAwake(
+  signal: AbortSignal,
+  onWaking: () => void,
+  { retryEveryMs = 5_000, giveUpAfterMs = 120_000 } = {},
+): Promise<Song[]> {
+  const started = Date.now();
+  for (;;) {
+    try {
+      return await getSongs(signal);
+    } catch (error) {
+      const serverDown = error instanceof ApiError && SERVER_DOWN_CODES.has(error.code);
+      if (!serverDown || signal.aborted || Date.now() - started >= giveUpAfterMs) throw error;
+      onWaking();
+      await new Promise((resolve) => setTimeout(resolve, retryEveryMs));
+      if (signal.aborted) throw error;
+    }
+  }
+}

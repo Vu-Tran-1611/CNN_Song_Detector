@@ -24,6 +24,15 @@ CNN_Song_Detector/
 6. UI design and polish
 7. Deploy: backend (Docker) on Hugging Face Spaces, frontend on Vercel
 
+## Deployment
+
+| Part | Where | How |
+|---|---|---|
+| Frontend (Next.js) | Vercel | Deploys automatically from `frontend/` on every push to `main` |
+| Backend (FastAPI + PyTorch) | Hugging Face Spaces (Docker, free CPU) | GitHub Actions (`.github/workflows/ci.yml`) runs all tests, then uploads `backend/` to the Space |
+
+Pull requests run the same tests without deploying.
+
 ## Songs (labels)
 
 | Label | Song |

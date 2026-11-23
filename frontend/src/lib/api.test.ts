@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ApiError, getSongs, predict } from "./api";
+import { ApiError, getSongs, getSongsWhenAwake, predict } from "./api";
 
 function respond(status: number, body: string, contentType = "application/json") {
   vi.stubGlobal("fetch", vi.fn(async () => new Response(body, { status, headers: { "content-type": contentType } })));
@@ -39,5 +39,34 @@ describe("api", () => {
   it("treats a failed fetch as 'can't reach the server'", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("Failed to fetch"))));
     expect((await apiError(getSongs())).code).toBe("network");
+  });
+});
+
+describe("getSongsWhenAwake", () => {
+  it("retries while the server is waking up, then returns the songs", async () => {
+    const replies = [
+      new Response("asleep", { status: 503 }),
+      new Response("asleep", { status: 503 }),
+      new Response(JSON.stringify({ songs: [{ id: 0, title: "Attention", artist: "Charlie Puth" }] }), { status: 200 }),
+    ];
+    vi.stubGlobal("fetch", vi.fn(async () => replies.shift()!));
+    let wakingCalls = 0;
+    const songs = await getSongsWhenAwake(new AbortController().signal, () => wakingCalls++, { retryEveryMs: 1 });
+    expect(songs).toHaveLength(1);
+    expect(wakingCalls).toBe(2);
+  });
+
+  it("does not retry real errors", async () => {
+    respond(422, JSON.stringify({ error: { code: "invalid_request", message: "Bad" } }));
+    let wakingCalls = 0;
+    const error = await apiError(getSongsWhenAwake(new AbortController().signal, () => wakingCalls++, { retryEveryMs: 1 }));
+    expect(error.code).toBe("invalid_request");
+    expect(wakingCalls).toBe(0);
+  });
+
+  it("gives up after the time limit", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("asleep", { status: 503 })));
+    const error = await apiError(getSongsWhenAwake(new AbortController().signal, () => {}, { retryEveryMs: 1, giveUpAfterMs: 20 }));
+    expect(error.code).toBe("network");
   });
 });

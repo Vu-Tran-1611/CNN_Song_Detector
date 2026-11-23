@@ -95,6 +95,15 @@ def test_predict_requires_audio_field(client):
     assert response.json()["error"]["code"] == "invalid_request"
 
 
+def test_cors_origin_regex_allows_vercel_previews():
+    settings = Settings(cors_origins=["https://song-detector-cnn.vercel.app"], cors_origin_regex=r"https://song-detector-cnn(-[a-z0-9-]+)?\.vercel\.app")
+    with TestClient(create_app(settings)) as c:
+        preview = c.get("/api/health", headers={"Origin": "https://song-detector-cnn-git-main-hoang.vercel.app"})
+        other = c.get("/api/health", headers={"Origin": "https://evil.example.com"})
+    assert preview.headers["access-control-allow-origin"] == "https://song-detector-cnn-git-main-hoang.vercel.app"
+    assert "access-control-allow-origin" not in other.headers
+
+
 def test_cors_allows_next_dev_server(client):
     response = client.get("/api/health", headers={"Origin": "http://localhost:3000"})
     assert response.headers["access-control-allow-origin"] == "http://localhost:3000"

@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { getSongs } from "@/lib/api";
+import { getSongsWhenAwake } from "@/lib/api";
 import type { ShelfHighlight } from "@/lib/detectorView";
 import type { Song } from "@/lib/types";
 
 import { VinylRecord } from "./VinylRecord";
 
-type ShelfState = { status: "loading" } | { status: "ready"; songs: Song[] } | { status: "error"; message: string };
+type ShelfState =
+  | { status: "loading" }
+  | { status: "waking" }
+  | { status: "ready"; songs: Song[] }
+  | { status: "error"; message: string };
 
 const ITEM_CLASS = "w-[7.5rem] shrink-0 snap-start sm:w-auto";
 
@@ -18,7 +22,7 @@ export function SongShelf({ highlight }: { highlight: ShelfHighlight }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    getSongs(controller.signal)
+    getSongsWhenAwake(controller.signal, () => setState({ status: "waking" }))
       .then((songs) => setState({ status: "ready", songs }))
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
@@ -47,6 +51,13 @@ export function SongShelf({ highlight }: { highlight: ShelfHighlight }) {
         {state.status === "ready" && <span className="text-base font-medium text-accent-deep">{state.songs.length} songs</span>}
       </div>
 
+      {state.status === "waking" && (
+        <p role="status" className="mb-4 flex items-center gap-2 text-base text-ink-muted">
+          <span aria-hidden="true" className="size-2 rounded-full bg-led-amber motion-safe:animate-led-pulse" />
+          Waking up the server… this can take up to a minute.
+        </p>
+      )}
+
       {state.status === "error" ? (
         <p className="rounded-2xl p-5 text-base text-ink-muted shadow-[var(--shadow-soft-inset)]">
           {state.message} The song list will appear when the backend is running.
@@ -56,7 +67,7 @@ export function SongShelf({ highlight }: { highlight: ShelfHighlight }) {
           ref={listRef}
           className="relative -mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-6 pt-3 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-x-6 sm:gap-y-8 sm:overflow-visible sm:px-0 md:grid-cols-5 lg:grid-cols-3 xl:grid-cols-4"
         >
-          {state.status === "loading"
+          {state.status === "loading" || state.status === "waking"
             ? Array.from({ length: 6 }, (_, i) => (
                 <li key={i} className={ITEM_CLASS} aria-hidden="true">
                   <div className="aspect-square w-full animate-pulse rounded-full shadow-[var(--shadow-soft-inset)]" />

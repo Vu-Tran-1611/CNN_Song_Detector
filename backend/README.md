@@ -81,6 +81,7 @@ Defaults live in `app/config.py`. Override any of them with an environment varia
 | `SONG_MIN_DURATION_SECONDS` / `SONG_MAX_DURATION_SECONDS` | `5` / `25` |
 | `SONG_MAX_UPLOAD_BYTES` | `5242880` (5 MB) |
 | `SONG_CORS_ORIGINS` | `["http://localhost:3000"]` (JSON list) |
+| `SONG_CORS_ORIGIN_REGEX` | none (e.g. `https://song-detector-cnn(-[a-z0-9-]+)?\.vercel\.app` for Vercel previews) |
 
 ## How a recording is split
 
@@ -103,3 +104,18 @@ This needs the audio in `research/` and the notebook's Python environment:
 It runs the notebook's own cells, then checks that `app.ml` gives the same waveforms, spectrograms, chunk votes and probabilities, and the same 178/188 (94.68%) test accuracy. The reference it saves in `.parity/` contains decoded song audio, so it is git-ignored. Without `--notebook-python` it reuses the saved reference.
 
 WAV is decoded with `soundfile`, not `torchaudio.load`, which now needs `torchcodec` and ffmpeg.
+
+## Docker
+
+```bash
+docker build -t song-detector-backend .
+docker run --rm -p 7860:7860 song-detector-backend
+```
+
+The image uses CPU-only PyTorch (same versions as training) and listens on port 7860, as Hugging Face Spaces expects.
+
+## Deployment
+
+The backend runs as a Docker Space on Hugging Face. On every push to `main`, GitHub Actions runs the tests and, if they pass, uploads this folder (plus `deploy/hf-space/README.md` as the Space's README) with `deploy/upload_to_space.py`. Hugging Face then rebuilds the image.
+
+Required GitHub settings: secret `HF_TOKEN` (a Hugging Face write token) and variable `HF_SPACE` (e.g. `username/song-detector`). On the Space, set `SONG_CORS_ORIGINS` to the frontend's address.
