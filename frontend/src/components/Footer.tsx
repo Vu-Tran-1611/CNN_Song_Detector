@@ -33,10 +33,10 @@ const LINKS = [
 
 export function Footer() {
   return (
-    <footer className="flex flex-col items-center gap-5 border-t border-black/5 pt-8 text-center sm:flex-row sm:justify-between sm:text-left">
+    <footer id="contact" className="scroll-mt-24 flex flex-col items-center gap-5 border-t border-black/5 pt-8 text-center sm:flex-row sm:justify-between sm:text-left">
       <div>
-        <p className="font-bold text-ink">Song Detector</p>
-        <p className="text-sm text-ink-muted">A CNN song recognizer · Next.js, FastAPI and PyTorch</p>
+        <p className="text-lg font-bold text-ink">Song Detector</p>
+        <p className="text-base text-ink-muted">A CNN song recognizer · Next.js, FastAPI and PyTorch</p>
       </div>
       <ul className="flex gap-4">
         {LINKS.map((link) => {

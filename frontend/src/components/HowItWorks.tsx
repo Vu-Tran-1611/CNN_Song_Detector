@@ -26,19 +26,19 @@ export function HowItWorks({ headingId, headingLevel = 2 }: { headingId: string;
   const Heading = headingLevel === 2 ? "h2" : "h3";
   return (
     <div className="flex flex-col gap-6">
-      <Heading id={headingId} className="text-xl font-bold text-ink sm:text-2xl">
+      <Heading id={headingId} className="text-2xl font-bold text-ink sm:text-3xl">
         How it works
       </Heading>
 
       <ol className="grid gap-4 sm:grid-cols-3">
         {STEPS.map((step, i) => (
           <li key={step.title} className="flex gap-3 sm:flex-col">
-            <span className="grid size-9 shrink-0 place-items-center rounded-full font-lcd7 text-sm text-accent-deep shadow-[var(--shadow-soft-sm)]">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full font-lcd7 text-base text-accent-deep shadow-[var(--shadow-soft-sm)]">
               {i + 1}
             </span>
             <div>
-              <p className="font-semibold text-ink">{step.title}</p>
-              <p className="mt-0.5 text-sm leading-relaxed text-ink-muted">{step.text}</p>
+              <p className="text-lg font-semibold text-ink">{step.title}</p>
+              <p className="mt-0.5 text-base leading-relaxed text-ink-muted">{step.text}</p>
             </div>
           </li>
         ))}
@@ -48,15 +48,15 @@ export function HowItWorks({ headingId, headingLevel = 2 }: { headingId: string;
         {FACTS.map((fact) => (
           <div key={fact.label} className="rounded-2xl px-3 py-3 text-center shadow-[var(--shadow-soft-inset)]">
             <dt className="sr-only">{fact.label}</dt>
-            <dd className="text-xl font-bold text-ink">{fact.value}</dd>
-            <dd aria-hidden="true" className="text-xs text-ink-muted">
+            <dd className="text-2xl font-bold text-ink">{fact.value}</dd>
+            <dd aria-hidden="true" className="text-sm text-ink-muted">
               {fact.label}
             </dd>
           </div>
         ))}
       </dl>
 
-      <p className="text-sm text-ink-muted">
+      <p className="text-base text-ink-muted">
         Your recordings are analyzed in memory and never stored. The last three results are kept only in this browser.
       </p>
     </div>

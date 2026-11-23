@@ -143,6 +143,13 @@ body {
   }
 }
 
+/* Smooth scrolling for the nav links (instant with "reduce motion"). */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Visible keyboard focus everywhere. */
 :focus-visible {
   outline: 3px solid var(--color-accent);

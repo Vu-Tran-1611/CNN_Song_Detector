@@ -59,7 +59,7 @@ export function VinylRecord({ song, highlight = null }: { song: Song; highlight?
       </div>
       <figcaption className="w-full min-w-0">
         <p className="truncate font-semibold leading-tight text-ink">{song.title}</p>
-        <p className="truncate text-sm text-ink-muted">{song.artist}</p>
+        <p className="truncate text-base text-ink-muted">{song.artist}</p>
       </figcaption>
     </figure>
   );

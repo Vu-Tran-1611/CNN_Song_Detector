@@ -43,14 +43,14 @@ export function SongShelf({ highlight }: { highlight: ShelfHighlight }) {
   return (
     <section aria-labelledby="shelf-title" className="min-w-0">
       <div className="mb-5 flex items-baseline justify-between gap-4">
-        <h2 id="shelf-title" className="text-xl font-bold text-ink sm:text-2xl">
+        <h2 id="shelf-title" className="text-2xl font-bold text-ink sm:text-3xl">
           Songs I can recognize
         </h2>
-        {state.status === "ready" && <span className="text-sm font-medium text-accent-deep">{state.songs.length} songs</span>}
+        {state.status === "ready" && <span className="text-base font-medium text-accent-deep">{state.songs.length} songs</span>}
       </div>
 
       {state.status === "error" ? (
-        <p className="rounded-2xl p-5 text-sm text-ink-muted shadow-[var(--shadow-soft-inset)]">
+        <p className="rounded-2xl p-5 text-base text-ink-muted shadow-[var(--shadow-soft-inset)]">
           {state.message} The song list will appear when the backend is running.
         </p>
       ) : (

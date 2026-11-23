@@ -81,12 +81,12 @@ function TensorGlyph({ freq, depth }: { freq: number; depth: number }) {
 
 export function ModelArchitecture() {
   return (
-    <section aria-labelledby="model-title" className="flex flex-col gap-8">
+    <section id="model" aria-labelledby="model-title" className="flex scroll-mt-24 flex-col gap-8">
       <div className="max-w-3xl">
-        <h2 id="model-title" className="text-xl font-bold text-ink sm:text-2xl">
+        <h2 id="model-title" className="text-2xl font-bold text-ink sm:text-3xl">
           Inside the model
         </h2>
-        <p className="mt-2 leading-relaxed text-ink-muted">
+        <p className="mt-2 text-lg leading-relaxed text-ink-muted">
           A small convolutional neural network (CNN) built with PyTorch. It reads one 5-second mel spectrogram, a picture of the
           sound with 128 frequency bands and 216 time steps, and gives a probability for each of the 10 songs.
         </p>
@@ -98,9 +98,9 @@ export function ModelArchitecture() {
           <li key={stage.name} className="relative flex items-center gap-3 rounded-2xl p-3 shadow-[var(--shadow-soft-sm)] lg:flex-col lg:items-start lg:p-4">
             <TensorGlyph freq={stage.freq} depth={stage.depth} />
             <div className="min-w-0">
-              <p className="font-semibold text-ink">{stage.name}</p>
-              <p className="text-xs leading-snug text-ink-muted">{stage.detail}</p>
-              <p className="mt-1 font-mono text-xs font-semibold text-accent-deep">{stage.shape}</p>
+              <p className="text-lg font-semibold text-ink">{stage.name}</p>
+              <p className="text-sm leading-snug text-ink-muted">{stage.detail}</p>
+              <p className="mt-1 font-mono text-sm font-semibold text-accent-deep">{stage.shape}</p>
             </div>
             {i < STAGES.length - 1 && (
               <span aria-hidden="true" className="absolute -right-2.5 top-1/2 hidden -translate-y-1/2 text-ink-muted lg:block">
@@ -115,8 +115,8 @@ export function ModelArchitecture() {
         {SUMMARY.map((item) => (
           <div key={item.label} className="rounded-2xl px-3 py-3 text-center shadow-[var(--shadow-soft-inset)]">
             <dt className="sr-only">{item.label}</dt>
-            <dd className="text-xl font-bold text-ink">{item.value}</dd>
-            <dd aria-hidden="true" className="text-xs text-ink-muted">
+            <dd className="text-2xl font-bold text-ink">{item.value}</dd>
+            <dd aria-hidden="true" className="text-sm text-ink-muted">
               {item.label}
             </dd>
           </div>
@@ -126,11 +126,11 @@ export function ModelArchitecture() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         {/* Layer-by-layer table */}
         <div className="min-w-0">
-          <h3 className="mb-3 font-bold text-ink">Layer by layer</h3>
+          <h3 className="mb-3 text-lg font-bold text-ink">Layer by layer</h3>
           <div className="overflow-x-auto rounded-2xl shadow-[var(--shadow-soft-inset)]">
-            <table className="w-full min-w-[32rem] text-left text-sm">
+            <table className="w-full min-w-[38rem] text-left text-base">
               <caption className="sr-only">CNN layers with output shapes (channels × frequency × time) and parameter counts</caption>
-              <thead className="text-xs uppercase tracking-wide text-ink-muted">
+              <thead className="text-sm uppercase tracking-wide text-ink-muted">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-semibold">Layer</th>
                   <th scope="col" className="px-4 py-3 font-semibold">Output shape</th>
@@ -141,8 +141,8 @@ export function ModelArchitecture() {
                 {LAYERS.map((row) => (
                   <tr key={row.layer + row.shape} className={row.pool ? "text-ink-muted" : "text-ink"}>
                     <td className="px-4 py-2">{row.layer}</td>
-                    <td className="whitespace-nowrap px-4 py-2 font-mono text-xs">{row.shape}</td>
-                    <td className="px-4 py-2 text-right font-mono text-xs">{row.params}</td>
+                    <td className="whitespace-nowrap px-4 py-2 font-mono text-sm">{row.shape}</td>
+                    <td className="px-4 py-2 text-right font-mono text-sm">{row.params}</td>
                   </tr>
                 ))}
               </tbody>
@@ -151,7 +151,7 @@ export function ModelArchitecture() {
                   <td className="px-4 py-3" colSpan={2}>
                     Total trainable parameters
                   </td>
-                  <td className="px-4 py-3 text-right font-mono text-xs">98,922</td>
+                  <td className="px-4 py-3 text-right font-mono text-sm">98,922</td>
                 </tr>
               </tfoot>
             </table>
@@ -160,8 +160,8 @@ export function ModelArchitecture() {
 
         <div className="flex min-w-0 flex-col gap-8">
           <div>
-            <h3 className="mb-3 font-bold text-ink">Why these layers</h3>
-            <dl className="flex flex-col gap-3 text-sm">
+            <h3 className="mb-3 text-lg font-bold text-ink">Why these layers</h3>
+            <dl className="flex flex-col gap-3 text-base">
               {WHY.map(([term, text]) => (
                 <div key={term}>
                   <dt className="font-semibold text-ink">{term}</dt>
@@ -172,8 +172,8 @@ export function ModelArchitecture() {
           </div>
 
           <div>
-            <h3 className="mb-3 font-bold text-ink">How it was trained</h3>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+            <h3 className="mb-3 text-lg font-bold text-ink">How it was trained</h3>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-base">
               {TRAINING.map(([term, text]) => (
                 <div key={term} className="contents">
                   <dt className="font-semibold text-ink">{term}</dt>
