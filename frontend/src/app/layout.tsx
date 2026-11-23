@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#e8ebf0",
+  themeColor: "#ebebeb",
   viewportFit: "cover", // lets the page use the safe-area insets around the iPhone notch
 };
 
