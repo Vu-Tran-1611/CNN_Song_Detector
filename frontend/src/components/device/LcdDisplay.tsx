@@ -1,16 +1,14 @@
 type LcdDisplayProps = {
-  topLine: string; // 14-segment text, e.g. "LISTENING"
-  main: string; // 7-segment digits, e.g. "00:07" or "98.4"
-  unit?: string; // small suffix after the digits, e.g. "%"
+  topLine: string;
+  main: string;
+  unit?: string;
   footLeft?: string;
   footRight?: string;
-  /** Plain-language status for screen readers (the LCD fonts are decorative). */
   srStatus: string;
 };
 
-const MARQUEE_FROM = 18; // characters; longer text scrolls
+const MARQUEE_FROM = 18;
 
-/** Unlit segments shown faintly behind the digits, like a real LCD. */
 function ghostOf(text: string, segment: string) {
   return text.replace(/[^.:]/g, segment);
 }
@@ -19,8 +17,6 @@ function TopLine({ text }: { text: string }) {
   if (text.length < MARQUEE_FROM) {
     return <div className="truncate text-center">{text}</div>;
   }
-  // Two copies side by side, shifted by half their width: a seamless loop.
-  // With "reduce motion" on, it shows the start of the text instead.
   return (
     <div className="overflow-hidden">
       <div

@@ -12,7 +12,6 @@ type ShelfState = { status: "loading" } | { status: "ready"; songs: Song[] } | {
 
 const ITEM_CLASS = "w-[7.5rem] shrink-0 snap-start sm:w-auto";
 
-/** "Songs I can recognize": the model's 10 songs as vinyl records. */
 export function SongShelf({ highlight }: { highlight: ShelfHighlight }) {
   const [state, setState] = useState<ShelfState>({ status: "loading" });
   const listRef = useRef<HTMLUListElement>(null);
@@ -28,7 +27,6 @@ export function SongShelf({ highlight }: { highlight: ShelfHighlight }) {
     return () => controller.abort();
   }, []);
 
-  // On phones the shelf scrolls sideways: bring the highlighted record into view.
   const highlightedId = highlight?.songId;
   useEffect(() => {
     const list = listRef.current;

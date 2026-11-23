@@ -1,5 +1,3 @@
-// Small inline icons (no icon library needed).
-
 type IconProps = { className?: string };
 
 export function MicIcon({ className }: IconProps) {

@@ -30,9 +30,9 @@ describe("api", () => {
   });
 
   it("treats a 5xx without our JSON error as 'can't reach the server'", async () => {
-    respond(500, "Internal Server Error", "text/plain"); // dev proxy with the backend down
+    respond(500, "Internal Server Error", "text/plain");
     expect((await apiError(getSongs())).code).toBe("network");
-    respond(503, "<html>Space is sleeping</html>", "text/html"); // host waking up
+    respond(503, "<html>Space is sleeping</html>", "text/html");
     expect((await apiError(getSongs())).code).toBe("network");
   });
 

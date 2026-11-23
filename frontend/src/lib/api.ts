@@ -1,13 +1,8 @@
-// The only module that talks to the backend.
-
 import type { ApiErrorBody, Prediction, Song } from "./types";
 
-// Empty in development: requests go to /api/... on the Next.js server, which
-// forwards them to the backend (see next.config.ts).
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
 const DEFAULT_TIMEOUT_MS = 15_000;
-// A free Hugging Face Space may need time to wake up on the first request.
 const PREDICT_TIMEOUT_MS = 60_000;
 
 export class ApiError extends Error {
@@ -38,9 +33,6 @@ async function request<T>(path: string, init: RequestInit = {}, timeoutMs = DEFA
 
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as ApiErrorBody | null;
-    // Our backend always answers errors with {"error": {...}}. A 5xx without it
-    // comes from something in front of it: the dev proxy when the backend is
-    // down, or the host while the server is asleep/restarting.
     if (!body?.error && response.status >= 500) {
       throw new ApiError("network", "Can't reach the server.", response.status);
     }

@@ -1,5 +1,3 @@
-// Runs on the browser's audio thread. Collects raw mic samples (mono) and
-// sends them to the page in ~4096-sample batches.
 class RecorderProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
@@ -20,7 +18,6 @@ class RecorderProcessor extends AudioWorkletProcessor {
 
     const frames = channels[0].length;
     for (let i = 0; i < frames; i++) {
-      // Average the channels in case the mic delivers stereo.
       let sum = 0;
       for (let c = 0; c < channels.length; c++) sum += channels[c][i];
       this.batch[this.filled++] = sum / channels.length;

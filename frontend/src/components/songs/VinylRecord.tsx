@@ -24,10 +24,8 @@ function initials(title: string) {
     .join("");
 }
 
-/** A vinyl record drawn with CSS, with a colored center label (no album art). */
 export type VinylHighlight = "recognized" | "guess" | null;
 
-/** recognized: orange ring + spinning. guess: dashed outline, not spinning. */
 export function VinylRecord({ song, highlight = null }: { song: Song; highlight?: VinylHighlight }) {
   const color = LABEL_COLORS[song.id % LABEL_COLORS.length];
 
@@ -50,7 +48,6 @@ export function VinylRecord({ song, highlight = null }: { song: Song; highlight?
           className="absolute inset-[30%] rounded-full shadow-[inset_0_0_0_3px_rgba(0,0,0,0.15)]"
           style={{ backgroundColor: color }}
         >
-          {/* Initials sit above the spindle hole, like the text on a real label */}
           <span className="absolute inset-x-0 top-[14%] text-center text-[9cqw] font-bold leading-none tracking-wide text-white">
             {initials(song.title)}
           </span>

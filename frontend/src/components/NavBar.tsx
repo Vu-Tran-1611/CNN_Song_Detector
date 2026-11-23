@@ -78,13 +78,11 @@ const ITEMS: { id: string; label: string; icon: ReactNode }[] = [
   },
 ];
 
-/** Sticky top bar: icon + label (icons only on phones); highlights the section being read. */
 export function NavBar() {
   const [active, setActive] = useState("detector");
 
   useEffect(() => {
     const sections = ITEMS.map((item) => document.getElementById(item.id)).filter((el): el is HTMLElement => el !== null);
-    // A section counts as "being read" when it crosses a band near the top third of the screen.
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries.filter((entry) => entry.isIntersecting);
@@ -103,7 +101,6 @@ export function NavBar() {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-2.5 sm:px-6 lg:px-10">
         <a href="#detector" className="flex items-center gap-2.5 rounded-full pr-2" aria-label="Song Detector, back to top">
-          {/* Mini vinyl, same as the app icon */}
           <span aria-hidden="true" className="grid size-9 place-items-center rounded-full bg-[#16181d] shadow-[var(--shadow-soft-sm)]">
             <span className="grid size-3.5 place-items-center rounded-full bg-accent">
               <span className="size-1 rounded-full bg-canvas" />

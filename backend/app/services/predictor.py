@@ -21,9 +21,6 @@ from app.ml.constants import CLIP_SAMPLES, SAMPLE_RATE
 logger = logging.getLogger("song_detector")
 
 
-# --------------------------------------------------------------------------- #
-# Errors
-# --------------------------------------------------------------------------- #
 class PredictionError(Exception):
     code = "prediction_error"
 
@@ -48,9 +45,6 @@ class AudioTooLongError(PredictionError):
     code = "too_long"
 
 
-# --------------------------------------------------------------------------- #
-# Data
-# --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
 class Song:
     id: int
@@ -60,7 +54,7 @@ class Song:
 
 @dataclass(frozen=True)
 class PredictionResult:
-    song: Song  # the recognized song, or the best guess
+    song: Song
     probability: float
     recognized: bool
     threshold: float
@@ -82,9 +76,6 @@ def load_songs(path: Path, label_to_song: Dict[int, str]) -> Dict[int, Song]:
     return songs
 
 
-# --------------------------------------------------------------------------- #
-# Service
-# --------------------------------------------------------------------------- #
 class SongPredictor:
     def __init__(
         self,
@@ -131,7 +122,7 @@ class SongPredictor:
         started = time.perf_counter()
         try:
             waveform = load_audio(data)
-        except Exception as exc:  # soundfile raises several error types for bad input
+        except Exception as exc:
             raise InvalidAudioError("Could not read the audio. Please send a WAV file.") from exc
 
         duration = waveform.shape[1] / SAMPLE_RATE
@@ -150,7 +141,6 @@ class SongPredictor:
             duration_seconds=duration,
         )
 
-        # Metadata only: the recording itself is never stored.
         logger.info(
             "prediction song=%r probability=%.4f recognized=%s chunks=%s duration=%.1fs time=%.0fms",
             result.song.title,

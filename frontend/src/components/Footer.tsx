@@ -1,5 +1,3 @@
-// Site footer with the author's links.
-
 const LINKS = [
   {
     label: "LinkedIn",

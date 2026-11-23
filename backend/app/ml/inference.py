@@ -12,10 +12,10 @@ from .features import waveform_to_mel
 
 @dataclass
 class Prediction:
-    label: int  # index of the most likely song
-    confidence: float  # its averaged probability, 0..1
-    probabilities: List[float]  # averaged probability for every song
-    chunk_predictions: List[int]  # winning label of each 5-second chunk
+    label: int
+    confidence: float
+    probabilities: List[float]
+    chunk_predictions: List[int]
 
 
 def split_into_clips(waveform: torch.Tensor, overlap_last: bool = False) -> List[torch.Tensor]:
@@ -52,11 +52,10 @@ def predict(
     if not clips:
         raise ValueError("The recording is empty.")
 
-    # One spectrogram per clip (as in training), then a single batched forward pass.
-    mels = torch.stack([waveform_to_mel(clip) for clip in clips]).to(device)  # (N, 1, 128, T)
-    probabilities = F.softmax(model(mels), dim=1).cpu()  # (N, num_classes)
+    mels = torch.stack([waveform_to_mel(clip) for clip in clips]).to(device)
+    probabilities = F.softmax(model(mels), dim=1).cpu()
 
-    average = probabilities.mean(dim=0)  # (num_classes,)
+    average = probabilities.mean(dim=0)
     label = int(torch.argmax(average))
     return Prediction(
         label=label,

@@ -25,8 +25,8 @@ def load_audio(source: AudioSource) -> torch.Tensor:
     if isinstance(source, Path):
         source = str(source)
 
-    data, sr = sf.read(source, dtype="float32", always_2d=True)  # (n_samples, channels)
-    waveform = torch.from_numpy(data.T.copy())  # (channels, n_samples)
+    data, sr = sf.read(source, dtype="float32", always_2d=True)
+    waveform = torch.from_numpy(data.T.copy())
     return to_model_format(waveform, sr)
 
 
@@ -36,4 +36,4 @@ def to_model_format(waveform: torch.Tensor, sample_rate: int) -> torch.Tensor:
         waveform = torch.mean(waveform, dim=0, keepdim=True)
     if sample_rate != SAMPLE_RATE:
         waveform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=SAMPLE_RATE)(waveform)
-    return waveform  # (1, n_samples)
+    return waveform

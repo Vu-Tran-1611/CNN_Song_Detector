@@ -21,8 +21,8 @@ def waveform_to_mel(waveform: torch.Tensor) -> torch.Tensor:
     Call it on one clip at a time, as the notebook does: the top_db limit is
     applied relative to the loudest value of the tensor passed in.
     """
-    mel = _mel_transform(waveform)  # (1, 128, T)
-    mel_db = _db_transform(mel)  # (1, 128, T)
+    mel = _mel_transform(waveform)
+    mel_db = _db_transform(mel)
     mean = mel_db.mean(dim=-1, keepdim=True)
     std = mel_db.std(dim=-1, keepdim=True)
     return (mel_db - mean) / (std + 1e-6)

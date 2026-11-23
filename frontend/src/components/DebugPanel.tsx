@@ -5,7 +5,6 @@ import { useEffect, useMemo } from "react";
 import type { Recording } from "@/lib/detectorState";
 import type { Prediction } from "@/lib/types";
 
-/** Shown only with ?debug=1: the last recording, the mic settings, and the raw backend response. */
 export function DebugPanel({ recording, prediction }: { recording?: Recording; prediction?: Prediction }) {
   const url = useMemo(() => (recording ? URL.createObjectURL(recording.blob) : null), [recording]);
   useEffect(() => () => void (url && URL.revokeObjectURL(url)), [url]);

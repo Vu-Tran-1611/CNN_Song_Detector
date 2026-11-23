@@ -5,17 +5,13 @@ import type { Ref } from "react";
 import { HowItWorks } from "@/components/HowItWorks";
 import { CloseIcon } from "@/components/icons";
 
-/**
- * "How it works" in a native <dialog>: focus is trapped inside, Esc closes it,
- * and so does tapping the dimmed backdrop. A bottom sheet on phones, centered on larger screens.
- */
 export function InfoSheet({ ref }: { ref: Ref<HTMLDialogElement> }) {
   return (
     <dialog
       ref={ref}
       aria-labelledby="info-title"
       onClick={(event) => {
-        if (event.target === event.currentTarget) event.currentTarget.close(); // backdrop tap
+        if (event.target === event.currentTarget) event.currentTarget.close();
       }}
       className={[
         "m-0 mt-auto max-h-[85dvh] w-full max-w-none overflow-y-auto rounded-t-[2rem] bg-canvas p-0 text-ink",

@@ -5,16 +5,16 @@ import { useEffect, useRef } from "react";
 import { MicIcon, StopIcon } from "@/components/icons";
 
 export type ListenButtonMode =
-  | "listen" // idle: tap to start
-  | "starting" // waiting for mic permission
-  | "locked" // listening, stop not allowed yet (< 5 s)
-  | "stop"; // listening, tap to stop
+  | "listen"
+  | "starting"
+  | "locked"
+  | "stop";
 
 type ListenButtonProps = {
   mode: ListenButtonMode;
-  progress: number; // 0..1 of the max recording time
+  progress: number;
   onPress: () => void;
-  getLevel: () => number; // live mic loudness 0..1
+  getLevel: () => number;
   ariaLabel: string;
 };
 
@@ -22,7 +22,6 @@ export function ListenButton({ mode, progress, onPress, getLevel, ariaLabel }: L
   const levelRef = useRef<HTMLDivElement>(null);
   const listening = mode === "locked" || mode === "stop";
 
-  // Animate the level ring outside React (no re-render every frame).
   useEffect(() => {
     const element = levelRef.current;
     if (!listening || !element) return;
@@ -45,12 +44,10 @@ export function ListenButton({ mode, progress, onPress, getLevel, ariaLabel }: L
 
   return (
     <div className="relative grid size-[clamp(10rem,48vw,12.5rem)] place-items-center">
-      {/* Idle: a soft white ripple that says "tap me" */}
       {mode === "listen" && (
         <div aria-hidden="true" className="absolute inset-[7%] rounded-full motion-safe:animate-idle-pulse" />
       )}
 
-      {/* Mic level: a soft light glow that grows with the sound */}
       <div
         ref={levelRef}
         aria-hidden="true"
@@ -58,7 +55,6 @@ export function ListenButton({ mode, progress, onPress, getLevel, ariaLabel }: L
         style={{ transform: "scale(calc(0.9 + var(--level, 0) * 0.35))", opacity: listening ? 1 : 0 }}
       />
 
-      {/* Ring: a muted rim in the panel's own colors; while listening it fills up over the 10 s */}
       <div
         aria-hidden="true"
         className="absolute inset-0 rounded-full shadow-[inset_2px_2px_5px_rgba(0,0,0,0.35),inset_-2px_-2px_5px_rgba(255,255,255,0.08)]"

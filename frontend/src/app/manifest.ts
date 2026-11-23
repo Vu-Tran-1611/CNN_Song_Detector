@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
 
-// Lets phones "Add to Home Screen" and open the app full-screen, like a native app.
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Song Detector",

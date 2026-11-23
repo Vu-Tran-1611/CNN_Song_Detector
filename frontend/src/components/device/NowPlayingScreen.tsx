@@ -8,7 +8,6 @@ const TITLE_CLASS: Record<SongScreen["tone"], string> = {
   error: "text-led-red",
 };
 
-/** Small "equalizer" bars shown while listening / identifying. */
 function Bars() {
   return (
     <span aria-hidden="true" className="flex h-4 items-end gap-[3px]">
@@ -23,7 +22,6 @@ function Bars() {
   );
 }
 
-/** The second screen under the LCD: the song title and artist, easy to read. */
 export function NowPlayingScreen({ screen }: { screen: SongScreen }) {
   return (
     <div className="rounded-[18px] bg-[#1c202c] px-4 py-3 shadow-[var(--shadow-knob-pressed)]">
@@ -31,7 +29,6 @@ export function NowPlayingScreen({ screen }: { screen: SongScreen }) {
         <span className="font-lcd14 text-[10px] tracking-[0.2em] text-panel-muted/80">{screen.label}</span>
         {screen.tone === "busy" && <Bars />}
       </div>
-      {/* Re-keyed on every change, so new text fades in */}
       <div key={`${screen.tone}:${screen.title}`} className="motion-safe:animate-fade-in">
         <p className={`mt-1.5 truncate text-xl font-bold leading-tight ${TITLE_CLASS[screen.tone]}`}>{screen.title}</p>
         <p className="mt-0.5 min-h-5 truncate text-sm text-panel-muted">{screen.subtitle ?? ""}</p>

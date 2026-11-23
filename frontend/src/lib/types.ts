@@ -1,5 +1,3 @@
-// Mirrors the backend's JSON (backend/app/schemas.py).
-
 export type Song = {
   id: number;
   title: string;
@@ -7,10 +5,10 @@ export type Song = {
 };
 
 export type Prediction = {
-  recognized: boolean; // probability >= threshold
-  song: Song; // the recognized song, or the best guess
-  probability: number; // 0..1
-  threshold: number; // 0..1
+  recognized: boolean;
+  song: Song;
+  probability: number;
+  threshold: number;
 };
 
 export type ApiErrorBody = {

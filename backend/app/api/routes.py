@@ -32,8 +32,6 @@ def predict_song(
     audio: UploadFile = File(description="WAV recording, 5-15 seconds"),
     predictor: SongPredictor = Depends(get_predictor),
 ) -> PredictionOut:
-    # A plain `def` endpoint: FastAPI runs it in a worker thread, so the model's
-    # CPU work doesn't block other requests.
     data = audio.file.read(predictor.max_upload_bytes + 1)
     if len(data) > predictor.max_upload_bytes:
         raise FileTooLargeError(f"File must be at most {predictor.max_upload_bytes // (1024 * 1024)} MB.")

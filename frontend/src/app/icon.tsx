@@ -2,7 +2,6 @@ import { ImageResponse } from "next/og";
 
 import { AppIconArt } from "@/components/brand/AppIconArt";
 
-// Browser tab icon (32) and the Android / "Add to Home Screen" icons (192, 512).
 const SIZES = [32, 192, 512];
 
 export function generateImageMetadata() {

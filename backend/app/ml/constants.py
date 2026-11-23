@@ -5,9 +5,9 @@ If they differ, the spectrograms the server computes won't match the ones the
 model learned from, and accuracy drops without any error.
 """
 
-SAMPLE_RATE = 22050  # Hz
+SAMPLE_RATE = 22050
 CLIP_SECONDS = 5
-CLIP_SAMPLES = SAMPLE_RATE * CLIP_SECONDS  # 110,250 samples per chunk
+CLIP_SAMPLES = SAMPLE_RATE * CLIP_SECONDS
 
 N_MELS = 128
 N_FFT = 2048

@@ -31,15 +31,14 @@ RESEARCH_DIR = BACKEND_DIR.parent / "research"
 NOTEBOOK = RESEARCH_DIR / "song_detector.ipynb"
 REFERENCE_FILE = BACKEND_DIR / ".parity" / "reference.pt"
 
-# Notebook cells to run, found by their content so cell order changes don't matter.
 CELL_MARKERS = [
-    "import os",  # imports
+    "import os",
     "import torch",
-    "BASE_DIR =",  # configuration
+    "BASE_DIR =",
     "def load_audio",
     "mel_transform =",
     "class songCNN",
-    "load = torch.load",  # load the trained model
+    "load = torch.load",
     "def predict_song",
 ]
 
@@ -55,21 +54,18 @@ def audio_files():
     return [f for f in files if f.exists()]
 
 
-# --------------------------------------------------------------------------- #
-# Phase 1: notebook reference (runs inside the notebook's environment)
-# --------------------------------------------------------------------------- #
 def build_reference():
     import torch
 
     cells = json.loads(NOTEBOOK.read_text())["cells"]
     sources = ["".join(c["source"]) for c in cells if c["cell_type"] == "code"]
 
-    os.chdir(RESEARCH_DIR)  # the notebook's BASE_DIR is the working directory
+    os.chdir(RESEARCH_DIR)
     ns = {"__name__": "notebook"}
     for marker in CELL_MARKERS:
         source = next(s for s in sources if s.lstrip().startswith(marker) or f"\n{marker}" in s)
         if marker == "class songCNN":
-            ns["DEVICE"] = "cpu"  # compare on CPU, like the server
+            ns["DEVICE"] = "cpu"
         with contextlib.redirect_stdout(io.StringIO()):
             exec(compile(source, f"<notebook: {marker}>", "exec"), ns)
 
@@ -83,7 +79,6 @@ def build_reference():
         with contextlib.redirect_stdout(io.StringIO()):
             chunk_preds, song, confidence = ns["predict_song"](model, path)
 
-        # Same loop as predict_song, keeping every spectrogram and probability.
         mels, probs = [], []
         with torch.no_grad():
             for start in range(0, waveform.shape[1], clip_samples):
@@ -109,9 +104,6 @@ def build_reference():
     torch.save(reference, REFERENCE_FILE)
 
 
-# --------------------------------------------------------------------------- #
-# Phase 2: compare with app.ml (runs in the backend venv)
-# --------------------------------------------------------------------------- #
 def compare():
     import torch
 
@@ -132,13 +124,10 @@ def compare():
     for name, ref in reference["files"].items():
         print(f"\n{name}")
         if name.endswith(".wav"):
-            # The server receives WAV, so check decoding end-to-end too.
             waveform = load_audio(ref["path"])
             diff = (waveform - ref["waveform"]).abs().max().item() if waveform.shape == ref["waveform"].shape else float("inf")
             check(diff < 1e-6, f"decoded waveform matches (max diff {diff:.2e})")
         else:
-            # MP3 decoders differ between libraries; reuse the notebook's waveform
-            # so this checks preprocessing + model, which is what must match.
             waveform = ref["waveform"]
 
         mels = torch.stack([waveform_to_mel(c) for c in split_into_clips(waveform)])
@@ -183,7 +172,7 @@ def main():
 
     if args.notebook_python:
         print("Phase 1: running the notebook's code in its own environment...")
-        env = {**os.environ, "KMP_DUPLICATE_LIB_OK": "TRUE"}  # same workaround the notebook uses
+        env = {**os.environ, "KMP_DUPLICATE_LIB_OK": "TRUE"}
         subprocess.run([args.notebook_python, __file__, "--phase", "reference"], check=True, env=env)
     elif not REFERENCE_FILE.exists():
         parser.error("no reference yet: pass --notebook-python to create it")

@@ -19,28 +19,27 @@ class SongCNN(nn.Module):
     def __init__(self, num_classes: int = NUM_CLASSES):
         super().__init__()
         self.features = nn.Sequential(
-            # Input: (B, 1, 128, T)
             nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(16),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),  # (B, 16, 64, T/2)
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),  # (B, 32, 32, T/4)
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),  # (B, 64, 16, T/8)
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(128),
-            nn.ReLU(),  # (B, 128, 16, T/8)
+            nn.ReLU(),
         )
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))  # (B, 128, 1, 1)
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
         self.classifier = nn.Sequential(
-            nn.Flatten(),  # (B, 128)
+            nn.Flatten(),
             nn.Dropout(0.7),
-            nn.Linear(128, num_classes),  # (B, num_classes)
+            nn.Linear(128, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

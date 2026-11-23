@@ -31,11 +31,10 @@ def upload(data: bytes):
 
 @pytest.fixture(scope="module")
 def client():
-    with TestClient(create_app(Settings())) as c:  # `with` runs startup (model loading)
+    with TestClient(create_app(Settings())) as c:
         yield c
 
 
-# --- endpoints with the real model ------------------------------------------
 def test_health(client):
     response = client.get("/api/health")
     assert response.status_code == 200
@@ -81,7 +80,7 @@ def test_predict_errors(client, data, status, code):
 def test_predict_rejects_large_files():
     app = create_app(Settings(max_upload_bytes=100_000))
     with TestClient(app) as c:
-        response = c.post("/api/predict", files=upload(wav(6.0)))  # ~265 KB
+        response = c.post("/api/predict", files=upload(wav(6.0)))
     assert response.status_code == 413
     assert response.json()["error"]["code"] == "file_too_large"
 
@@ -97,7 +96,6 @@ def test_cors_allows_next_dev_server(client):
     assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
 
 
-# --- threshold rules with a stub model ---------------------------------------
 class StubModel(torch.nn.Module):
     """Always gives `probability` to `label`, the rest spread over the other songs."""
 
@@ -140,7 +138,7 @@ def test_confident_prediction_is_recognized():
 def test_low_confidence_returns_best_guess():
     result = stub_predictor(label=7, probability=0.62).predict_audio(wav(10.0))
     assert not result.recognized
-    assert result.song.id == 7  # best guess is still returned
+    assert result.song.id == 7
 
 
 def test_route_uses_injected_predictor():

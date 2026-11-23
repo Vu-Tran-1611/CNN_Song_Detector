@@ -1,5 +1,3 @@
-// What the device shows for each detector state. Pure, so it's easy to test.
-
 import {
   MAX_RECORDING_SECONDS,
   MIN_RECORDING_SECONDS,
@@ -13,23 +11,22 @@ export type LedTone = "off" | "green" | "amber" | "red";
 export type ButtonMode = "listen" | "starting" | "locked" | "stop";
 export type ShelfHighlight = { songId: number; kind: "recognized" | "guess" } | null;
 
-/** The second screen under the LCD: which song it is. */
 export type SongScreen = {
-  label: string; // small caption, e.g. "NOW PLAYING"
+  label: string;
   title: string;
   subtitle?: string;
   tone: "empty" | "busy" | "recognized" | "guess" | "error";
 };
 
 export type DetectorView = {
-  top: string; // LCD text line (14-segment, uppercase)
-  main: string; // LCD big digits (7-segment)
+  top: string;
+  main: string;
   unit?: string;
   led: LedTone;
   ledPulse?: boolean;
   button: ButtonMode;
   hint: string;
-  sr: string; // plain-language status for screen readers
+  sr: string;
   highlight: ShelfHighlight;
   screen: SongScreen;
 };

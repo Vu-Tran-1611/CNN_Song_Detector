@@ -1,5 +1,3 @@
-// "Projects": one featured card, then compact rows.
-
 type ProjectLink = { label: string; href: string; kind: "demo" | "github" | "here" };
 
 type Project = {
@@ -121,7 +119,6 @@ export function Projects() {
         Projects
       </h2>
 
-      {/* Featured project: the device-panel look, so it stands out */}
       <article className="relative overflow-hidden rounded-[2rem] panel-texture p-6 text-panel-ink shadow-[var(--shadow-panel)] sm:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
           <div className="flex max-w-2xl flex-col gap-4">
@@ -171,7 +168,6 @@ export function Projects() {
         </div>
       </article>
 
-      {/* Compact rows */}
       <ul className="flex flex-col gap-4">
         {OTHERS.map((project) => (
           <li key={project.title}>

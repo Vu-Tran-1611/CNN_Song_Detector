@@ -1,11 +1,7 @@
-// "Inside the model": the CNN from backend/app/ml/model.py, layer by layer.
-// Shapes and parameter counts were measured from the trained model (channels × frequency × time).
-
 type Stage = {
   name: string;
   detail: string;
   shape: string;
-  // for the little tensor drawing: height ~ frequency bins, layers ~ channels
   freq: number;
   depth: number;
 };
@@ -65,7 +61,7 @@ const WHY = [
 ];
 
 function TensorGlyph({ freq, depth }: { freq: number; depth: number }) {
-  const height = 8 + (freq / 128) * 40; // px, shrinks as pooling halves the frequency axis
+  const height = 8 + (freq / 128) * 40;
   return (
     <div aria-hidden="true" className="relative h-14 w-14">
       {Array.from({ length: depth }, (_, i) => (
@@ -92,7 +88,6 @@ export function ModelArchitecture() {
         </p>
       </div>
 
-      {/* Flow of the network */}
       <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
         {STAGES.map((stage, i) => (
           <li key={stage.name} className="relative flex items-center gap-3 rounded-2xl p-3 shadow-[var(--shadow-soft-sm)] lg:flex-col lg:items-start lg:p-4">
@@ -124,7 +119,6 @@ export function ModelArchitecture() {
       </dl>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        {/* Layer-by-layer table */}
         <div className="flex min-w-0 flex-col">
           <h3 className="mb-3 text-lg font-bold text-ink">Layer by layer</h3>
           <div className="flex-1 overflow-x-auto rounded-2xl shadow-[var(--shadow-soft-inset)]">

@@ -1,5 +1,3 @@
-// "How it works": the same content in the Info sheet and in the section under the shelf.
-
 const STEPS = [
   {
     title: "Listen",

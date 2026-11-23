@@ -4,10 +4,6 @@ import { useEffect, useState } from "react";
 
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 
-/**
- * Animates a number from 0 up to `target` (like LCD digits rolling up).
- * Returns `target` right away when target is null or "reduce motion" is on.
- */
 export function useCountUp(target: number | null, durationMs = 700): number | null {
   const [frame, setFrame] = useState<{ target: number | null; value: number }>({ target: null, value: 0 });
 
@@ -29,6 +25,5 @@ export function useCountUp(target: number | null, durationMs = 700): number | nu
   }, [target, durationMs]);
 
   if (target === null) return null;
-  // Until the first frame for a new target runs, start from 0 (not the old value).
   return frame.target === target ? frame.value : 0;
 }

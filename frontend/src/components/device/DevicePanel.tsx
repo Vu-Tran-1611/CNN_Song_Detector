@@ -4,7 +4,6 @@ import { BroadcastIcon } from "@/components/icons";
 
 import { StatusLed, type LedTone } from "./StatusLed";
 
-/** The blue-grey "radio" body that holds the display and controls. */
 export function DevicePanel({ led, ledPulse, children }: { led: LedTone; ledPulse?: boolean; children: ReactNode }) {
   return (
     <section

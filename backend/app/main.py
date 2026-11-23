@@ -27,7 +27,6 @@ from app.services.predictor import (
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
-# How each domain error maps to an HTTP status.
 ERROR_STATUS = {
     InvalidAudioError: 400,
     FileTooLargeError: 413,
@@ -45,7 +44,6 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        # Load the model once and reuse it for every request.
         predictor = SongPredictor.from_settings(settings)
         predictor.warm_up()
         app.state.predictor = predictor

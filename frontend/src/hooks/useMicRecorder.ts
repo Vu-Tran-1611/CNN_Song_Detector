@@ -5,8 +5,6 @@ import { useCallback, useEffect, useRef } from "react";
 import { concatChunks, encodeWav } from "@/lib/audio/wav";
 import type { DetectorError, Recording } from "@/lib/detectorState";
 
-// Browser voice processing is tuned for calls and treats music as noise.
-// It must be off so the audio matches the recordings the model trained on.
 const MIC_CONSTRAINTS: MediaStreamConstraints = {
   audio: {
     echoCancellation: false,
@@ -49,16 +47,12 @@ function toDetectorError(cause: unknown): DetectorError {
 export function isRecordingSupported(): boolean {
   return (
     typeof window !== "undefined" &&
-    window.isSecureContext && // the mic needs HTTPS (or localhost)
+    window.isSecureContext &&
     !!navigator.mediaDevices?.getUserMedia &&
     typeof AudioWorkletNode !== "undefined"
   );
 }
 
-/**
- * Records mono audio from the mic at the device's own sample rate.
- * The backend resamples to 22,050 Hz with torchaudio, as in training.
- */
 export function useMicRecorder({ onInterrupted }: { onInterrupted?: (error: DetectorError) => void } = {}) {
   const session = useRef<Session | null>(null);
   const onInterruptedRef = useRef(onInterrupted);
@@ -86,8 +80,6 @@ export function useMicRecorder({ onInterrupted }: { onInterrupted?: (error: Dete
     }
     cleanup();
 
-    // Create the AudioContext right away, inside the tap: iPhone Safari only
-    // allows audio to start from a direct user action.
     const context = new AudioContext();
     let stream: MediaStream;
     try {
@@ -106,8 +98,6 @@ export function useMicRecorder({ onInterrupted }: { onInterrupted?: (error: Dete
       const analyser = context.createAnalyser();
       analyser.fftSize = 1024;
 
-      // The worklet has to reach the destination to be processed; a muted
-      // gain node keeps the mic from playing back through the speakers.
       const mute = context.createGain();
       mute.gain.value = 0;
       source.connect(worklet).connect(mute).connect(context.destination);
@@ -118,7 +108,6 @@ export function useMicRecorder({ onInterrupted }: { onInterrupted?: (error: Dete
         if (event.data instanceof Float32Array) chunks.push(event.data);
       };
 
-      // Mic unplugged or taken by another app.
       stream.getAudioTracks()[0]?.addEventListener("ended", () => {
         cleanup();
         onInterruptedRef.current?.({ code: "interrupted", message: "The microphone stopped." });
@@ -143,7 +132,6 @@ export function useMicRecorder({ onInterrupted }: { onInterrupted?: (error: Dete
     const s = session.current;
     if (!s) throw new RecorderError({ code: "unknown", message: "Recording isn't running." });
 
-    // Ask the worklet for its last partial batch before closing.
     await new Promise<void>((resolve) => {
       const timeout = setTimeout(resolve, 300);
       s.worklet.port.onmessage = (event) => {
@@ -169,7 +157,6 @@ export function useMicRecorder({ onInterrupted }: { onInterrupted?: (error: Dete
     };
   }, [cleanup]);
 
-  /** Current mic loudness, 0..1 (for the level ring). Cheap: call it every frame. */
   const getLevel = useCallback((): number => {
     const s = session.current;
     if (!s) return 0;
@@ -177,10 +164,9 @@ export function useMicRecorder({ onInterrupted }: { onInterrupted?: (error: Dete
     let sum = 0;
     for (const v of s.levelBuffer) sum += v * v;
     const rms = Math.sqrt(sum / s.levelBuffer.length);
-    return Math.min(1, rms * 4); // music at normal volume ~0.05-0.25 RMS
+    return Math.min(1, rms * 4);
   }, []);
 
-  // Release the mic if the component goes away mid-recording.
   useEffect(() => cleanup, [cleanup]);
 
   return { start, stop, cancel: cleanup, getLevel };

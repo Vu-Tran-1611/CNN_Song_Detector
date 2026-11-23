@@ -10,11 +10,11 @@ describe("encodeWavBuffer", () => {
     const view = new DataView(encodeWavBuffer(new Float32Array(48000), 48000));
     expect(text(view, 0, 4)).toBe("RIFF");
     expect(text(view, 8, 4)).toBe("WAVE");
-    expect(view.getUint16(20, true)).toBe(1); // PCM
-    expect(view.getUint16(22, true)).toBe(1); // mono
-    expect(view.getUint32(24, true)).toBe(48000); // sample rate
-    expect(view.getUint16(34, true)).toBe(16); // bits per sample
-    expect(view.getUint32(40, true)).toBe(96000); // 1 s of 2-byte samples
+    expect(view.getUint16(20, true)).toBe(1);
+    expect(view.getUint16(22, true)).toBe(1);
+    expect(view.getUint32(24, true)).toBe(48000);
+    expect(view.getUint16(34, true)).toBe(16);
+    expect(view.getUint32(40, true)).toBe(96000);
     expect(view.byteLength).toBe(44 + 96000);
   });
 

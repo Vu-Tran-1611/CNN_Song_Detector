@@ -1,6 +1,3 @@
-// The app icon, drawn for next/og's ImageResponse (inline styles + flexbox only).
-// A vinyl record with an orange label on the device panel's blue-grey.
-
 export function AppIconArt({ size, rounded }: { size: number; rounded: boolean }) {
   const record = size * 0.68;
   const label = record * 0.36;

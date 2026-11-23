@@ -8,7 +8,6 @@ const display = Red_Hat_Display({
   subsets: ["latin"],
 });
 
-// DSEG by keshikan, SIL Open Font License 1.1 (see src/fonts/DSEG-LICENSE.txt).
 const dseg7 = localFont({
   src: "../fonts/DSEG7Classic-Bold.woff2",
   variable: "--font-dseg7",
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#ebebeb",
-  viewportFit: "cover", // lets the page use the safe-area insets around the iPhone notch
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,14 +1,8 @@
-// The listening flow as a state machine. Each state is its own type, so the
-// UI can never be in two states at once (e.g. "listening" and "result").
-//
-//   idle → requesting → listening → analyzing → result
-//                                            ↘ error   (any state can fail)
-
 import type { Prediction } from "./types";
 
-export const MIN_RECORDING_SECONDS = 5; // the model needs one full 5 s chunk
+export const MIN_RECORDING_SECONDS = 5;
 export const MAX_RECORDING_SECONDS = 10;
-export const SLOW_ANALYSIS_MS = 4_000; // after this, tell the user the server is waking up
+export const SLOW_ANALYSIS_MS = 4_000;
 
 export type Recording = {
   blob: Blob;
@@ -18,12 +12,10 @@ export type Recording = {
 };
 
 export type DetectorErrorCode =
-  // microphone
   | "mic-denied"
   | "no-mic"
   | "unsupported"
   | "interrupted"
-  // backend
   | "no-server"
   | "too-short"
   | "too-long"
@@ -38,7 +30,7 @@ export type DetectorError = {
 
 export type DetectorState =
   | { status: "idle" }
-  | { status: "requesting" } // waiting for mic permission
+  | { status: "requesting" }
   | { status: "listening"; startedAt: number }
   | { status: "analyzing"; recording: Recording; slow: boolean }
   | { status: "result"; recording: Recording; prediction: Prediction }
@@ -86,7 +78,6 @@ export function detectorReducer(state: DetectorState, action: DetectorAction): D
   }
 }
 
-/** The recording behind the current state, if any (for the debug panel). */
 export function recordingOf(state: DetectorState): Recording | undefined {
   return "recording" in state ? state.recording : undefined;
 }
@@ -95,7 +86,6 @@ export function elapsedSeconds(state: DetectorState, now: number): number {
   return state.status === "listening" ? Math.max(0, (now - state.startedAt) / 1000) : 0;
 }
 
-/** Stop only unlocks once a full 5 s chunk has been recorded. */
 export function canStop(state: DetectorState, now: number): boolean {
   return state.status === "listening" && elapsedSeconds(state, now) >= MIN_RECORDING_SECONDS;
 }
@@ -104,7 +94,6 @@ export function shouldAutoStop(state: DetectorState, now: number): boolean {
   return state.status === "listening" && elapsedSeconds(state, now) >= MAX_RECORDING_SECONDS;
 }
 
-/** Turn a backend/API error code into what the detector shows. */
 export function errorFromApi(code: string, message: string): DetectorError {
   switch (code) {
     case "network":

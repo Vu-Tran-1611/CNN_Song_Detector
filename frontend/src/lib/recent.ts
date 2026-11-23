@@ -1,7 +1,3 @@
-// The last few detections, saved in this browser only (localStorage).
-// Exposed as a tiny external store so React can read it with useSyncExternalStore
-// (no hydration mismatch: the server always renders an empty list).
-
 import type { Prediction } from "./types";
 
 export const MAX_RECENT = 3;
@@ -10,13 +6,12 @@ const STORAGE_KEY = "song-detector:recent:v1";
 export type RecentDetection = {
   songId: number;
   title: string;
-  probability: number; // 0..1
+  probability: number;
   recognized: boolean;
 };
 
 const EMPTY: RecentDetection[] = [];
 
-/** Newest first, at most MAX_RECENT. */
 export function addRecent(list: RecentDetection[], prediction: Prediction): RecentDetection[] {
   const item: RecentDetection = {
     songId: prediction.song.id,
@@ -39,7 +34,6 @@ function isRecent(value: unknown): value is RecentDetection {
   );
 }
 
-/** Parse stored JSON defensively: anything unexpected becomes an empty list. */
 export function parseRecent(raw: string | null): RecentDetection[] {
   if (!raw) return EMPTY;
   try {
@@ -50,7 +44,6 @@ export function parseRecent(raw: string | null): RecentDetection[] {
   }
 }
 
-// --- store -------------------------------------------------------------------
 let cache: RecentDetection[] | null = null;
 const listeners = new Set<() => void>();
 
@@ -58,7 +51,7 @@ function read(): RecentDetection[] {
   try {
     return parseRecent(window.localStorage.getItem(STORAGE_KEY));
   } catch {
-    return EMPTY; // storage blocked (e.g. private mode)
+    return EMPTY;
   }
 }
 
@@ -78,18 +71,14 @@ export const recentStore = {
     cache = addRecent(recentStore.getSnapshot(), prediction);
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
-    } catch {
-      // Not saved (storage blocked); still shown for this visit.
-    }
+    } catch {}
     listeners.forEach((listener) => listener());
   },
   clear() {
     cache = EMPTY;
     try {
       window.localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Storage blocked; the list is still cleared for this visit.
-    }
+    } catch {}
     listeners.forEach((listener) => listener());
   },
 };

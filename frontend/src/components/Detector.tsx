@@ -47,7 +47,6 @@ export function Detector() {
 
   const recent = useSyncExternalStore(recentStore.subscribe, recentStore.getSnapshot, recentStore.getServerSnapshot);
 
-  // ?debug=1 shows the debug panel (read on the client only).
   const debug = useSyncExternalStore(
     subscribeToNothing,
     () => new URLSearchParams(window.location.search).has("debug"),
@@ -58,14 +57,12 @@ export function Detector() {
     onInterrupted: (error) => dispatch({ type: "FAILED", error }),
   });
 
-  /** Send the recording to the backend and show the answer. */
   const analyze = useCallback(async (recording: Recording) => {
     const slowTimer = setTimeout(() => dispatch({ type: "ANALYSIS_SLOW" }), SLOW_ANALYSIS_MS);
     try {
       const prediction = await predict(recording.blob);
       dispatch({ type: "PREDICTED", prediction });
       recentStore.add(prediction);
-      // A short buzz when a song is recognized (Android; iPhones ignore it).
       if (prediction.recognized) navigator.vibrate?.([25, 40, 25]);
     } catch (error) {
       dispatch({ type: "FAILED", error: toDetectorError(error, "Something went wrong. Try again.") });
@@ -106,7 +103,6 @@ export function Detector() {
     }
   }, [state, recorder, stop]);
 
-  // Tick the countdown while listening, and stop automatically at 10 s.
   useEffect(() => {
     if (state.status !== "listening") return;
     const id = setInterval(() => {
@@ -117,7 +113,6 @@ export function Detector() {
     return () => clearInterval(id);
   }, [state, stop]);
 
-  // Phones stop the mic when the page goes to the background.
   useEffect(() => {
     if (state.status !== "listening") return;
     const onHide = () => {
@@ -135,9 +130,7 @@ export function Detector() {
   const view = describe(state, now);
   const progress = Math.min(1, elapsedSeconds(state, now) / MAX_RECORDING_SECONDS);
 
-  // The result's percent rolls up on the LCD, like real segment digits.
   const shown = useCountUp(state.status === "result" ? state.prediction.probability : null);
-  // "!" is DSEG's digit-wide blank, so the digits don't shift while counting.
   const lcdMain = shown === null ? view.main : (shown * 100).toFixed(1).padStart(view.main.length, "!");
 
   return (
@@ -149,7 +142,6 @@ export function Detector() {
         </div>
 
         <div className="flex flex-col items-center gap-4 py-2">
-          {/* Small side knobs around the big Listen button, as in the design */}
           <div className="flex w-full items-center justify-between gap-2">
             <RoundButton label="Info" icon={<InfoIcon className="size-5" />} onClick={() => infoRef.current?.showModal()} />
             <ListenButton

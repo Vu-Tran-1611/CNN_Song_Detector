@@ -1,5 +1,3 @@
-// "About me": who built this and what they work on.
-
 const FOCUS = ["Recommender systems", "LLM applications", "RAG", "AI agents", "Backend integration for AI products"];
 
 export function AboutMe() {

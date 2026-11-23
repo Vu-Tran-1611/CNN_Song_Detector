@@ -1,6 +1,5 @@
 import { MAX_RECENT, type RecentDetection } from "@/lib/recent";
 
-/** The orange "presets" strip: the last few detections, newest on the left. */
 export function RecentStrip({ items }: { items: RecentDetection[] }) {
   const slots = Array.from({ length: MAX_RECENT }, (_, i) => items[i]);
 

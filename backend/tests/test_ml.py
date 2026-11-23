@@ -18,7 +18,7 @@ MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "song_cnn_model.pt
 def tone(seconds: float, sample_rate: int = SAMPLE_RATE, freq: float = 440.0, channels: int = 1) -> np.ndarray:
     t = np.arange(int(seconds * sample_rate)) / sample_rate
     wave = (0.3 * np.sin(2 * math.pi * freq * t)).astype(np.float32)
-    return np.stack([wave] * channels, axis=1)  # (n_samples, channels)
+    return np.stack([wave] * channels, axis=1)
 
 
 def wav_bytes(samples: np.ndarray, sample_rate: int) -> bytes:
@@ -82,7 +82,6 @@ def test_predict_rejects_empty_audio(checkpoint):
         predict(model, torch.zeros(1, 0))
 
 
-# --- overlap_last=True (used by the API) -------------------------------------
 def ramp(seconds: float) -> torch.Tensor:
     return torch.arange(int(seconds * SAMPLE_RATE), dtype=torch.float32).unsqueeze(0)
 
@@ -92,7 +91,7 @@ def test_overlap_last_uses_final_five_seconds_without_padding():
     clips = split_into_clips(waveform, overlap_last=True)
     assert len(clips) == 2
     assert torch.equal(clips[0], waveform[:, :CLIP_SAMPLES])
-    assert torch.equal(clips[1], waveform[:, -CLIP_SAMPLES:])  # [2 s - 7 s]
+    assert torch.equal(clips[1], waveform[:, -CLIP_SAMPLES:])
 
 
 @pytest.mark.parametrize("seconds, expected_clips", [(10.0, 2), (12.0, 3), (5.0, 1)])

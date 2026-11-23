@@ -7,7 +7,6 @@ type RoundButtonProps = {
   disabled?: boolean;
 };
 
-/** A small raised knob on the panel with a caption, like the side knobs in the design. */
 export function RoundButton({ label, icon, onClick, disabled = false }: RoundButtonProps) {
   return (
     <div className="flex flex-col items-center gap-1.5">
