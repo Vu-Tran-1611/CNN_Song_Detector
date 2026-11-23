@@ -125,10 +125,10 @@ export function ModelArchitecture() {
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         {/* Layer-by-layer table */}
-        <div className="min-w-0">
+        <div className="flex min-w-0 flex-col">
           <h3 className="mb-3 text-lg font-bold text-ink">Layer by layer</h3>
-          <div className="overflow-x-auto rounded-2xl shadow-[var(--shadow-soft-inset)]">
-            <table className="w-full min-w-[38rem] text-left text-base">
+          <div className="flex-1 overflow-x-auto rounded-2xl shadow-[var(--shadow-soft-inset)]">
+            <table className="h-full w-full min-w-[38rem] text-left text-base">
               <caption className="sr-only">CNN layers with output shapes (channels × frequency × time) and parameter counts</caption>
               <thead className="text-sm uppercase tracking-wide text-ink-muted">
                 <tr>
