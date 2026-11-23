@@ -1,6 +1,6 @@
 # Backend
 
-A FastAPI service that takes a 5–15 second WAV recording, runs the trained CNN on it, and returns the predicted song with its probability. The model, preprocessing and inference code came from `research/song_detector.ipynb`, and a parity check confirms it gives the same results.
+A FastAPI service that takes a 5–25 second WAV recording (the app sends 10–20 s), runs the trained CNN on it, and returns the predicted song with its probability. The model, preprocessing and inference code came from `research/song_detector.ipynb`, and a parity check confirms it gives the same results.
 
 ## Layout
 
@@ -52,7 +52,7 @@ curl -F "audio=@../research/live_recording.wav" http://localhost:8765/api/predic
 |---|---|---|
 | `GET` | `/api/health` | `{"status": "ok", "model_loaded": true}` |
 | `GET` | `/api/songs` | `{"songs": [{"id", "title", "artist"}, ...]}` |
-| `POST` | `/api/predict` | form field `audio` (WAV, 5–15 s) → prediction |
+| `POST` | `/api/predict` | form field `audio` (WAV, 5–25 s) → prediction |
 
 ```json
 { "recognized": true, "song": { "id": 0, "title": "Attention", "artist": "Charlie Puth" }, "probability": 0.9841, "threshold": 0.8 }
@@ -66,7 +66,7 @@ Errors always look like `{"error": {"code": "...", "message": "..."}}`:
 |---|---|---|
 | `invalid_audio` | 400 | the file can't be decoded |
 | `file_too_large` | 413 | over 5 MB |
-| `too_short` / `too_long` | 422 | under 5 s / over 15 s |
+| `too_short` / `too_long` | 422 | under 5 s / over 25 s |
 | `invalid_request` | 422 | no form field named `audio` |
 
 Recordings are processed in memory and never stored. Only metadata is logged (song, probability, chunk votes, duration, time).
@@ -78,7 +78,7 @@ Defaults live in `app/config.py`. Override any of them with an environment varia
 | Variable | Default |
 |---|---|
 | `SONG_CONFIDENCE_THRESHOLD` | `0.80` |
-| `SONG_MIN_DURATION_SECONDS` / `SONG_MAX_DURATION_SECONDS` | `5` / `15` |
+| `SONG_MIN_DURATION_SECONDS` / `SONG_MAX_DURATION_SECONDS` | `5` / `25` |
 | `SONG_MAX_UPLOAD_BYTES` | `5242880` (5 MB) |
 | `SONG_CORS_ORIGINS` | `["http://localhost:3000"]` (JSON list) |
 

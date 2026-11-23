@@ -59,6 +59,10 @@ def test_predict_returns_contract(client):
     assert body["recognized"] == (body["probability"] >= CONFIDENCE_THRESHOLD)
 
 
+def test_predict_accepts_a_full_20_second_recording(client):
+    assert client.post("/api/predict", files=upload(wav(20.3, sample_rate=48000))).status_code == 200
+
+
 def test_predict_resamples_other_sample_rates(client):
     assert client.post("/api/predict", files=upload(wav(6.0, sample_rate=48000))).status_code == 200
 
@@ -68,7 +72,7 @@ def test_predict_resamples_other_sample_rates(client):
     [
         (b"this is not audio", 400, "invalid_audio"),
         (wav(4.9), 422, "too_short"),
-        (wav(15.5), 422, "too_long"),
+        (wav(25.5), 422, "too_long"),
     ],
 )
 def test_predict_errors(client, data, status, code):
@@ -118,7 +122,7 @@ def stub_predictor(label: int, probability: float) -> SongPredictor:
         songs=SONGS,
         threshold=0.80,
         min_duration_seconds=5.0,
-        max_duration_seconds=15.0,
+        max_duration_seconds=25.0,
         max_upload_bytes=5 * 1024 * 1024,
     )
 

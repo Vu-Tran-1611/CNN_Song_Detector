@@ -1,7 +1,7 @@
 import type { Prediction } from "./types";
 
-export const MIN_RECORDING_SECONDS = 5;
-export const MAX_RECORDING_SECONDS = 10;
+export const MIN_RECORDING_SECONDS = 10;
+export const MAX_RECORDING_SECONDS = 20;
 export const SLOW_ANALYSIS_MS = 4_000;
 
 export type Recording = {

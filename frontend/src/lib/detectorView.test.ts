@@ -15,10 +15,10 @@ const result = (recognized: boolean, probability: number): DetectorState => ({
 group("describe", () => {
   it("shows the countdown and lock while listening", () => {
     const view = describe({ status: "listening", startedAt: 0 }, 2_500);
-    expect(view.main).toBe("00:08");
+    expect(view.main).toBe("00:18");
     expect(view.button).toBe("locked");
-    expect(view.hint).toContain("3s");
-    expect(describe({ status: "listening", startedAt: 0 }, 6_000).button).toBe("stop");
+    expect(view.hint).toContain("8s");
+    expect(describe({ status: "listening", startedAt: 0 }, 11_000).button).toBe("stop");
   });
 
   it("shows analyzing, then a waking-up message when slow", () => {

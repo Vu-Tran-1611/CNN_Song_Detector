@@ -65,15 +65,15 @@ describe("detectorReducer", () => {
 });
 
 describe("stop rules", () => {
-  it("locks stop for the first 5 seconds", () => {
-    expect(canStop(listening(0), 4_999)).toBe(false);
-    expect(canStop(listening(0), 5_000)).toBe(true);
+  it("locks stop for the first 10 seconds", () => {
+    expect(canStop(listening(0), 9_999)).toBe(false);
+    expect(canStop(listening(0), 10_000)).toBe(true);
     expect(canStop(initialDetectorState, 99_999)).toBe(false);
   });
 
-  it("stops automatically at 10 seconds", () => {
-    expect(shouldAutoStop(listening(0), 9_999)).toBe(false);
-    expect(shouldAutoStop(listening(0), 10_000)).toBe(true);
+  it("stops automatically at 20 seconds", () => {
+    expect(shouldAutoStop(listening(0), 19_999)).toBe(false);
+    expect(shouldAutoStop(listening(0), 20_000)).toBe(true);
   });
 });
 

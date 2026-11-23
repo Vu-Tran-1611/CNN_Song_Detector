@@ -1,7 +1,7 @@
 const STEPS = [
   {
     title: "Listen",
-    text: "Tap Listen while a song plays. The app records 5–10 seconds from your mic, with the browser's voice filters turned off so the music isn't altered.",
+    text: "Tap Listen while a song plays. The app records 10–20 seconds from your mic, with the browser's voice filters turned off so the music isn't altered.",
   },
   {
     title: "Analyze",

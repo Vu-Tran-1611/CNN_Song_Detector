@@ -49,7 +49,7 @@ const OTHERS: Project[] = [
     title: "Song Detector",
     dates: "2026",
     summary:
-      "This site: a CNN trained on mel spectrograms identifies which of 10 songs is playing from a 10-second mic recording.",
+      "This site: a CNN trained on mel spectrograms identifies which of 10 songs is playing from a 10–20 second mic recording.",
     tags: ["PyTorch", "FastAPI", "Next.js"],
     links: [
       { label: "Try it", href: "#detector", kind: "here" },

@@ -1,6 +1,6 @@
 # Frontend
 
-A Next.js web app styled as a soft-UI radio. Tap **Listen**, it records 5–10 seconds from the microphone, sends the recording to the backend, and shows which song is playing.
+A Next.js web app styled as a soft-UI radio. Tap **Listen**, it records 10–20 seconds from the microphone, sends the recording to the backend, and shows which song is playing.
 
 ## What you see
 
@@ -61,7 +61,7 @@ This starts the dev server with a self-signed HTTPS certificate on all network i
 
 1. `getUserMedia` with **echo cancellation, noise suppression and auto gain control off**. Those are tuned for voice calls and treat music as noise.
 2. An AudioWorklet (`public/worklets/recorder-processor.js`) collects raw mono samples off the main thread. An AnalyserNode drives the level ring.
-3. Stop unlocks after 5 seconds (the model needs one full 5-second chunk), and recording stops automatically at 10 seconds.
+3. Stop unlocks after 10 seconds, and recording stops automatically at 20 seconds. The backend splits the recording into 5-second pieces and averages the model's answers over them.
 4. The samples are saved as a 16-bit mono WAV at the mic's own sample rate. The backend resamples to 22,050 Hz with torchaudio, the same resampler used in training.
 
 ## Layout

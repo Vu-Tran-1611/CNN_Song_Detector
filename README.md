@@ -1,6 +1,6 @@
 # CNN Song Detector
 
-A small PyTorch project that listens to a short audio clip (e.g. 10 seconds from the microphone) and predicts which of 10 known songs is playing, using a CNN trained on mel spectrograms.
+A small PyTorch project that listens to a short audio clip (10–20 seconds from the microphone) and predicts which of 10 known songs is playing, using a CNN trained on mel spectrograms.
 
 The project is being turned into a web app: a Next.js frontend with a Shazam-style "tap to listen" button, and a FastAPI backend that runs the model.
 

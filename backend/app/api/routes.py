@@ -29,7 +29,7 @@ def songs(predictor: SongPredictor = Depends(get_predictor)) -> SongsOut:
     responses={400: {"model": ErrorOut}, 413: {"model": ErrorOut}, 422: {"model": ErrorOut}},
 )
 def predict_song(
-    audio: UploadFile = File(description="WAV recording, 5-15 seconds"),
+    audio: UploadFile = File(description="WAV recording, 5-25 seconds"),
     predictor: SongPredictor = Depends(get_predictor),
 ) -> PredictionOut:
     data = audio.file.read(predictor.max_upload_bytes + 1)

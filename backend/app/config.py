@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     confidence_threshold: float = CONFIDENCE_THRESHOLD
 
     min_duration_seconds: float = 5.0
-    max_duration_seconds: float = 15.0
+    max_duration_seconds: float = 25.0
     max_upload_bytes: int = 5 * 1024 * 1024
 
     model_path: Path = BACKEND_DIR / "models" / "song_cnn_model.pth"
