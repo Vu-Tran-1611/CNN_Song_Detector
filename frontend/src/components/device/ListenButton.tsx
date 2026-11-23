@@ -64,7 +64,7 @@ export function ListenButton({ mode, progress, onPress, getLevel, ariaLabel }: L
         className="absolute inset-0 rounded-full shadow-[inset_2px_2px_5px_rgba(0,0,0,0.35),inset_-2px_-2px_5px_rgba(255,255,255,0.08)]"
         style={{
           background: listening
-            ? `conic-gradient(var(--color-accent) ${progress * 360}deg, rgba(255,255,255,0.1) 0deg)`
+            ? `conic-gradient(rgba(206, 214, 234, 0.7) ${progress * 360}deg, rgba(255,255,255,0.08) 0deg)`
             : "linear-gradient(145deg, #6c7693, #4d5670 55%, #3d4459)",
         }}
       />

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore } from "react";
 
 import { DebugPanel } from "@/components/DebugPanel";
-import { HowItWorks } from "@/components/HowItWorks";
 import { InfoSheet } from "@/components/InfoSheet";
 import { ClearIcon, InfoIcon } from "@/components/icons";
 import { DevicePanel } from "@/components/device/DevicePanel";
@@ -175,9 +174,6 @@ export function Detector() {
 
       <div className="flex min-w-0 flex-col gap-12">
         <SongShelf highlight={view.highlight} />
-        <section aria-labelledby="how-title">
-          <HowItWorks headingId="how-title" />
-        </section>
         {debug && (
           <DebugPanel recording={recordingOf(state)} prediction={state.status === "result" ? state.prediction : undefined} />
         )}

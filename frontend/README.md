@@ -16,6 +16,8 @@ The **recent strip** keeps the last 3 results, saved in this browser only (`loca
 
 When a song is recognized, the LCD percent rolls up, the record pops into place and spins, and Android phones give a short buzz. With "reduce motion" on, all animations are skipped.
 
+Below the app, full width: **How it works**, **Inside the model** (the CNN layer by layer, with output shapes and parameter counts measured from the trained model, plus how it was trained), and a footer with the author's links.
+
 The app has its own icon (generated in `src/app/icon.tsx` and `apple-icon.tsx`) and a web app manifest, so "Add to Home Screen" on a phone opens it full-screen like an app.
 
 Built mobile-first: one column on phones, the panel centered on tablets, two columns on desktop.
@@ -71,7 +73,7 @@ src/
 │   ├── Detector.tsx          # ties together the state machine, recorder, timer and UI
 │   ├── DebugPanel.tsx        # ?debug=1
 │   ├── device/               # DevicePanel, LcdDisplay, NowPlayingScreen, ListenButton, RoundButton, StatusLed, RecentStrip
-│   ├── HowItWorks.tsx, InfoSheet.tsx
+│   ├── HowItWorks.tsx, InfoSheet.tsx, ModelArchitecture.tsx, Footer.tsx
 │   ├── brand/AppIconArt.tsx  # the app icon artwork
 │   └── songs/                # SongShelf, VinylRecord
 ├── hooks/useMicRecorder.ts   # start() / stop() → WAV, getLevel()
