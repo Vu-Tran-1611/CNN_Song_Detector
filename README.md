@@ -22,14 +22,14 @@ CNN_Song_Detector/
 4. Next.js app with microphone recording (raw audio → WAV, browser voice processing turned off)
 5. Connect frontend and backend: listen → analyze → result
 6. UI design and polish
-7. Deploy: backend (Docker) on Hugging Face Spaces, frontend on Vercel
+7. Deploy: backend (Docker) on Railway, frontend on Vercel
 
 ## Deployment
 
 | Part | Where | How |
 |---|---|---|
 | Frontend (Next.js) | Vercel | Deploys automatically from `frontend/` on every push to `main` |
-| Backend (FastAPI + PyTorch) | Hugging Face Spaces (Docker, free CPU) | GitHub Actions (`.github/workflows/ci.yml`) runs all tests, then uploads `backend/` to the Space |
+| Backend (FastAPI + PyTorch) | Railway (Docker) | Railway builds `backend/Dockerfile` on every push to `main`, after GitHub Actions (`.github/workflows/ci.yml`) has run all tests ("Wait for CI") |
 
 Pull requests run the same tests without deploying.
 

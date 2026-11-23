@@ -109,13 +109,13 @@ WAV is decoded with `soundfile`, not `torchaudio.load`, which now needs `torchco
 
 ```bash
 docker build -t song-detector-backend .
-docker run --rm -p 7860:7860 song-detector-backend
+docker run --rm -p 8000:8000 song-detector-backend
 ```
 
-The image uses CPU-only PyTorch (same versions as training) and listens on port 7860, as Hugging Face Spaces expects.
+The image uses CPU-only PyTorch (same versions as training) and listens on `$PORT` (default 8000), which is how Railway and most hosts pass the port.
 
 ## Deployment
 
-The backend runs as a Docker Space on Hugging Face. On every push to `main`, GitHub Actions runs the tests and, if they pass, uploads this folder (plus `deploy/hf-space/README.md` as the Space's README) with `deploy/upload_to_space.py`. Hugging Face then rebuilds the image.
+The backend runs on Railway. The service uses Root Directory `/backend` and config file `/backend/railway.json` (Dockerfile build, health check on `/api/health`). With "Wait for CI" on, Railway deploys each push to `main` only after the GitHub Actions tests pass.
 
-Required GitHub settings: secret `HF_TOKEN` (a Hugging Face write token) and variable `HF_SPACE` (e.g. `username/song-detector`). On the Space, set `SONG_CORS_ORIGINS` to the frontend's address.
+On Railway, set `SONG_CORS_ORIGINS` to the frontend's address and, optionally, `SONG_CORS_ORIGIN_REGEX` for Vercel preview deployments.

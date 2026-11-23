@@ -1,4 +1,4 @@
-name: CI / Deploy
+name: CI
 
 on:
   push:
@@ -47,20 +47,3 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-
-  deploy-backend:
-    name: Deploy backend to Hugging Face
-    needs: [backend, frontend]
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.HF_SPACE != ''
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install "huggingface_hub>=0.26"
-      - name: Upload backend/ to the Space
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_SPACE: ${{ vars.HF_SPACE }}
-        run: python deploy/upload_to_space.py

@@ -32,7 +32,7 @@ describe("api", () => {
   it("treats a 5xx without our JSON error as 'can't reach the server'", async () => {
     respond(500, "Internal Server Error", "text/plain");
     expect((await apiError(getSongs())).code).toBe("network");
-    respond(503, "<html>Space is sleeping</html>", "text/html");
+    respond(503, "<html>Service unavailable</html>", "text/html");
     expect((await apiError(getSongs())).code).toBe("network");
   });
 
