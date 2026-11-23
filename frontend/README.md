@@ -4,11 +4,11 @@ A Next.js web app styled as a soft-UI radio. Tap **Listen**, it records 5–10 s
 
 ## What you see
 
-| Result | LCD | Shelf | LED |
-|---|---|---|---|
-| Recognized (≥ 80%) | `ATTENTION - CHARLIE PUTH` / `98.4 %` | the record gets an orange ring and spins | green |
-| Not sure (< 80%) | `NOT SURE - MAYBE ATTENTION` / `62.0 %` | dashed outline on the best guess | amber |
-| Error | `NO SERVER`, `MIC BLOCKED`, `TOO SHORT`… / `Err` | | red |
+| Result | LCD | Song screen (under the LCD) | Shelf | LED |
+|---|---|---|---|---|
+| Recognized (≥ 80%) | `RECOGNIZED` / `98.4 %` | NOW PLAYING: **Attention**, Charlie Puth (orange) | the record gets an orange ring and spins | green |
+| Not sure (< 80%) | `NOT SURE` / `62.0 %` | BEST GUESS: **Maybe Attention?** (amber) | dashed outline on the best guess | amber |
+| Error | `NO SERVER`, `MIC BLOCKED`, `TOO SHORT`… / `Err` | No song | | red |
 
 Long LCD text scrolls. With the system's "reduce motion" setting on, nothing scrolls or spins. If the server needs more than 4 seconds (e.g. a free host waking up), the LCD shows `WAKING UP`.
 
@@ -66,7 +66,7 @@ src/
 ├── components/
 │   ├── Detector.tsx          # ties together the state machine, recorder, timer and UI
 │   ├── DebugPanel.tsx        # ?debug=1
-│   ├── device/               # DevicePanel, LcdDisplay, ListenButton, StatusLed, RecentStrip
+│   ├── device/               # DevicePanel, LcdDisplay, NowPlayingScreen, ListenButton, StatusLed, RecentStrip
 │   └── songs/                # SongShelf, VinylRecord
 ├── hooks/useMicRecorder.ts   # start() / stop() → WAV, getLevel()
 ├── lib/

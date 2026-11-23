@@ -6,6 +6,7 @@ import { DebugPanel } from "@/components/DebugPanel";
 import { DevicePanel } from "@/components/device/DevicePanel";
 import { LcdDisplay } from "@/components/device/LcdDisplay";
 import { ListenButton } from "@/components/device/ListenButton";
+import { NowPlayingScreen } from "@/components/device/NowPlayingScreen";
 import { RecentStrip } from "@/components/device/RecentStrip";
 import { SongShelf } from "@/components/songs/SongShelf";
 import { RecorderError, useMicRecorder } from "@/hooks/useMicRecorder";
@@ -130,7 +131,10 @@ export function Detector() {
   return (
     <div className="grid gap-10 lg:grid-cols-[26rem_minmax(0,1fr)] lg:items-start lg:gap-14">
       <DevicePanel led={view.led} ledPulse={view.ledPulse}>
-        <LcdDisplay topLine={view.top} main={view.main} unit={view.unit} footLeft="CNN" footRight="10 SONGS" srStatus={view.sr} />
+        <div className="flex flex-col gap-3">
+          <LcdDisplay topLine={view.top} main={view.main} unit={view.unit} footLeft="CNN" footRight="10 SONGS" srStatus={view.sr} />
+          <NowPlayingScreen screen={view.screen} />
+        </div>
 
         <div className="flex flex-col items-center gap-4 py-2">
           <ListenButton

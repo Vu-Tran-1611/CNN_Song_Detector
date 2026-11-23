@@ -13,6 +13,14 @@ export type LedTone = "off" | "green" | "amber" | "red";
 export type ButtonMode = "listen" | "starting" | "locked" | "stop";
 export type ShelfHighlight = { songId: number; kind: "recognized" | "guess" } | null;
 
+/** The second screen under the LCD: which song it is. */
+export type SongScreen = {
+  label: string; // small caption, e.g. "NOW PLAYING"
+  title: string;
+  subtitle?: string;
+  tone: "empty" | "busy" | "recognized" | "guess" | "error";
+};
+
 export type DetectorView = {
   top: string; // LCD text line (14-segment, uppercase)
   main: string; // LCD big digits (7-segment)
@@ -23,6 +31,7 @@ export type DetectorView = {
   hint: string;
   sr: string; // plain-language status for screen readers
   highlight: ShelfHighlight;
+  screen: SongScreen;
 };
 
 const ERROR_LCD: Record<DetectorErrorCode, string> = {
@@ -53,6 +62,7 @@ export function describe(state: DetectorState, now: number): DetectorView {
         hint: "Tap to identify a song",
         sr: "Ready. Press Listen to identify a song.",
         highlight: null,
+        screen: { label: "NOW PLAYING", title: "No song yet", subtitle: "Play a song and tap Listen", tone: "empty" },
       };
 
     case "requesting":
@@ -65,6 +75,7 @@ export function describe(state: DetectorState, now: number): DetectorView {
         hint: "Allow the microphone to start listening",
         sr: "Waiting for microphone permission.",
         highlight: null,
+        screen: { label: "NOW PLAYING", title: "Waiting for the mic…", tone: "busy" },
       };
 
     case "listening": {
@@ -81,6 +92,7 @@ export function describe(state: DetectorState, now: number): DetectorView {
           : "Tap stop, or keep listening",
         sr: locked ? "Listening." : "Listening. You can stop now.",
         highlight: null,
+        screen: { label: "NOW PLAYING", title: "Listening…", subtitle: "Keep the music playing", tone: "busy" },
       };
     }
 
@@ -95,14 +107,14 @@ export function describe(state: DetectorState, now: number): DetectorView {
         hint: state.slow ? "The server is waking up, this can take a moment…" : "Identifying the song…",
         sr: "Identifying the song.",
         highlight: null,
+        screen: { label: "NOW PLAYING", title: "Identifying…", tone: "busy" },
       };
 
     case "result": {
       const { recognized, song, probability } = state.prediction;
-      const name = `${song.title} - ${song.artist}`;
       return recognized
         ? {
-            top: name.toUpperCase(),
+            top: "RECOGNIZED",
             main: percent(probability),
             unit: "%",
             led: "green",
@@ -110,9 +122,10 @@ export function describe(state: DetectorState, now: number): DetectorView {
             hint: "Tap to listen again",
             sr: `Recognized ${song.title} by ${song.artist}, ${percent(probability)} percent sure.`,
             highlight: { songId: song.id, kind: "recognized" },
+            screen: { label: "NOW PLAYING", title: song.title, subtitle: song.artist, tone: "recognized" },
           }
         : {
-            top: `NOT SURE - MAYBE ${song.title.toUpperCase()}`,
+            top: "NOT SURE",
             main: percent(probability),
             unit: "%",
             led: "amber",
@@ -120,6 +133,7 @@ export function describe(state: DetectorState, now: number): DetectorView {
             hint: "Not sure. Try closer to the speaker.",
             sr: `Not sure. Maybe ${song.title} by ${song.artist}, ${percent(probability)} percent.`,
             highlight: { songId: song.id, kind: "guess" },
+            screen: { label: "BEST GUESS", title: `Maybe ${song.title}?`, subtitle: song.artist, tone: "guess" },
           };
     }
 
@@ -132,6 +146,7 @@ export function describe(state: DetectorState, now: number): DetectorView {
         hint: state.error.message,
         sr: `Error: ${state.error.message}`,
         highlight: null,
+        screen: { label: "NOW PLAYING", title: "No song", subtitle: "Tap Listen to try again", tone: "error" },
       };
   }
 }

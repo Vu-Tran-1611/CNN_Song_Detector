@@ -30,7 +30,8 @@ group("describe", () => {
 
   it("shows a recognized song with its probability and highlights it", () => {
     const view = describe(result(true, 0.9841), 0);
-    expect(view.top).toBe("WE DON'T TALK ANY MORE - CHARLIE PUTH");
+    expect(view.top).toBe("RECOGNIZED");
+    expect(view.screen).toEqual({ label: "NOW PLAYING", title: "We Don't Talk Any More", subtitle: "Charlie Puth", tone: "recognized" });
     expect(view.main).toBe("98.4");
     expect(view.unit).toBe("%");
     expect(view.led).toBe("green");
@@ -39,7 +40,8 @@ group("describe", () => {
 
   it("shows 'not sure' with the best guess", () => {
     const view = describe(result(false, 0.62), 0);
-    expect(view.top).toBe("NOT SURE - MAYBE WE DON'T TALK ANY MORE");
+    expect(view.top).toBe("NOT SURE");
+    expect(view.screen).toEqual({ label: "BEST GUESS", title: "Maybe We Don't Talk Any More?", subtitle: "Charlie Puth", tone: "guess" });
     expect(view.main).toBe("62.0");
     expect(view.led).toBe("amber");
     expect(view.highlight).toEqual({ songId: 9, kind: "guess" });
@@ -51,5 +53,14 @@ group("describe", () => {
     expect(view.main).toBe("Err");
     expect(view.led).toBe("red");
     expect(view.hint).toBe("Can't reach the server.");
+    expect(view.screen.tone).toBe("error");
+  });
+});
+
+group("song screen", () => {
+  it("is empty before any result and busy while listening or identifying", () => {
+    expect(describe({ status: "idle" }, 0).screen.tone).toBe("empty");
+    expect(describe({ status: "listening", startedAt: 0 }, 1_000).screen).toMatchObject({ title: "Listening…", tone: "busy" });
+    expect(describe({ status: "analyzing", recording, slow: false }, 0).screen).toMatchObject({ title: "Identifying…", tone: "busy" });
   });
 });
