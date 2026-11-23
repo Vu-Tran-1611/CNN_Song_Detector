@@ -81,7 +81,7 @@ Defaults live in `app/config.py`. Override any of them with an environment varia
 | `SONG_MIN_DURATION_SECONDS` / `SONG_MAX_DURATION_SECONDS` | `5` / `25` |
 | `SONG_MAX_UPLOAD_BYTES` | `5242880` (5 MB) |
 | `SONG_CORS_ORIGINS` | `["http://localhost:3000"]` (JSON list) |
-| `SONG_CORS_ORIGIN_REGEX` | none (e.g. `https://song-detector-cnn(-[a-z0-9-]+)?\.vercel\.app` for Vercel previews) |
+| `SONG_CORS_ORIGIN_REGEX` | none (e.g. `https://cnn-song-detector(-[a-z0-9-]+)?\.vercel\.app` for Vercel previews) |
 
 ## How a recording is split
 
@@ -116,6 +116,6 @@ The image uses CPU-only PyTorch (same versions as training) and listens on `$POR
 
 ## Deployment
 
-The backend runs on Railway. The service uses Root Directory `/backend` and config file `/backend/railway.json` (Dockerfile build, health check on `/api/health`). With "Wait for CI" on, Railway deploys each push to `main` only after the GitHub Actions tests pass.
+The backend runs on Railway at https://cnnsongdetector-production.up.railway.app (docs at `/docs`). The service uses Root Directory `/backend` and config file `/backend/railway.json` (Dockerfile build, health check on `/api/health`). With "Wait for CI" on, Railway deploys each push to `main` only after the GitHub Actions tests pass.
 
 On Railway, set `SONG_CORS_ORIGINS` to the frontend's address and, optionally, `SONG_CORS_ORIGIN_REGEX` for Vercel preview deployments.
