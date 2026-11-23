@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------------ *
+ * Design tokens: soft UI (neumorphism) + a skeuomorphic radio device.
+ * ------------------------------------------------------------------------ */
+@theme {
+  /* Page */
+  --color-canvas: #e8ebf0;
+  --color-ink: #1f2430;
+  --color-ink-muted: #545c6b;
+
+  /* Device panel (blue-grey metal) */
+  --color-panel: #4d5878;
+  --color-panel-deep: #3c4562;
+  --color-panel-ink: #eef1f8;
+  --color-panel-muted: #c9cfdf;
+
+  /* LCD */
+  --color-lcd: #a9ada8;
+  --color-lcd-ink: #1b1e20;
+
+  /* Accent + status */
+  --color-accent: #f25c22;
+  --color-accent-deep: #c9440f;
+  --color-led-green: #5ee36a;
+  --color-led-amber: #ffb547;
+  --color-led-red: #ff5a4f;
+
+  /* Fonts (set in layout.tsx) */
+  --font-sans: var(--font-display), ui-rounded, system-ui, sans-serif;
+  --font-lcd7: var(--font-dseg7), ui-monospace, monospace;
+  --font-lcd14: var(--font-dseg14), ui-monospace, monospace;
+
+  /* Soft shadows on the light page */
+  --shadow-soft: 10px 10px 24px #c5cad3, -10px -10px 24px #ffffff;
+  --shadow-soft-sm: 5px 5px 12px #c5cad3, -5px -5px 12px #ffffff;
+  --shadow-soft-inset: inset 5px 5px 10px #c5cad3, inset -5px -5px 10px #ffffff;
+
+  /* The device panel itself */
+  --shadow-panel: 18px 22px 44px rgba(52, 61, 92, 0.38), -12px -12px 32px rgba(255, 255, 255, 0.9);
+
+  /* Raised / pressed controls on the dark panel */
+  --shadow-knob: 8px 8px 18px rgba(18, 23, 40, 0.55), -6px -6px 16px rgba(130, 142, 182, 0.35),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.22);
+  --shadow-knob-pressed: inset 7px 7px 14px rgba(18, 23, 40, 0.6), inset -5px -5px 12px rgba(130, 142, 182, 0.3);
+  --shadow-lcd: inset 4px 4px 10px rgba(0, 0, 0, 0.28), inset -3px -3px 8px rgba(255, 255, 255, 0.25),
+    0 1px 0 rgba(255, 255, 255, 0.15);
+
+  --animate-idle-pulse: idle-pulse 2.4s ease-in-out infinite;
+  --animate-led-pulse: led-pulse 1.2s ease-in-out infinite;
+
+  @keyframes idle-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(242, 92, 34, 0.45);
+    }
+    50% {
+      box-shadow: 0 0 0 14px rgba(242, 92, 34, 0);
+    }
+  }
+  @keyframes led-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+}
+
+/* Brushed-metal grain for the panel: a tiny SVG noise texture. */
+@utility panel-texture {
+  background-color: var(--color-panel);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E"),
+    linear-gradient(160deg, #56628a 0%, var(--color-panel) 45%, var(--color-panel-deep) 100%);
+}
+
+html {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* Visible keyboard focus everywhere. */
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
