@@ -12,6 +12,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
 CONFIDENCE_THRESHOLD = 0.80
+FAMILIARITY_THRESHOLD = 0.10
 
 
 class Settings(BaseSettings):
@@ -25,6 +26,10 @@ class Settings(BaseSettings):
 
     model_path: Path = BACKEND_DIR / "models" / "song_cnn_model.pth"
     songs_path: Path = BACKEND_DIR / "models" / "songs.json"
+    reference_path: Path = BACKEND_DIR / "models" / "reference_embeddings.pt"
+
+    screening_enabled: bool = True
+    familiarity_threshold: Optional[float] = FAMILIARITY_THRESHOLD
 
     cors_origins: List[str] = ["http://localhost:3000"]
     cors_origin_regex: Optional[str] = None

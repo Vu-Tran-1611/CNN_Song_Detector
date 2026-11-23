@@ -38,8 +38,10 @@ def predict_song(
 
     result = predictor.predict_audio(data)
     return PredictionOut(
+        status=result.status,
         recognized=result.recognized,
-        song=song_out(result.song),
+        song=song_out(result.song) if result.song else None,
         probability=round(result.probability, 4),
         threshold=result.threshold,
+        reason=result.reason,
     )

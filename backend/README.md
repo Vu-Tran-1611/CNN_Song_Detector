@@ -55,10 +55,26 @@ curl -F "audio=@../research/live_recording.wav" http://localhost:8765/api/predic
 | `POST` | `/api/predict` | form field `audio` (WAV, 5–25 s) → prediction |
 
 ```json
-{ "recognized": true, "song": { "id": 0, "title": "Attention", "artist": "Charlie Puth" }, "probability": 0.9841, "threshold": 0.8 }
+{ "status": "recognized", "recognized": true, "song": { "id": 0, "title": "Attention", "artist": "Charlie Puth" }, "probability": 0.9841, "threshold": 0.8, "reason": null }
 ```
 
-When `probability` is below `threshold`, `recognized` is `false` and `song` is the best guess.
+| `status` | Meaning | `song` |
+|---|---|---|
+| `recognized` | probability ≥ threshold | the song |
+| `not_sure` | probability below the threshold | the best guess |
+| `unknown` | music, but nothing like the training data | `null` |
+| `no_music` | `reason` is `silence`, `noise`, `tone` or `speech` | `null` |
+
+## Rejecting non-music
+
+The CNN always picks one of its 10 songs, even for a beep or someone talking (a test tone scored "Timeless, 87.6%"). Two checks run around the model, which itself is unchanged:
+
+1. **Audio checks** (`app/ml/screening.py`), before the model: loudness and active frames (silence), spectral flatness (noise), energy share of the 3 strongest mel bands and spectral flux (steady tones, chords, sweeps), and pause ratio plus loudness jumps (speech).
+2. **Familiarity** (`app/ml/familiarity.py`): the mean cosine distance between the recording's 128-dim fingerprints (global average pooling output) and the 10 nearest training fingerprints (`models/reference_embeddings.pt`, built by `scripts/build_reference_embeddings.py`). Above 0.10 the result is `unknown`.
+
+Measured through the API code: 216 of 217 windows of the 10 songs (studio and mic, every 15 s) recognized and 1 not sure, none rejected; 41 of 41 non-music clips rejected (speech, tones, sweeps, held chords, noise, silence). Limitation: other songs look as familiar to this model as the 10 it knows, so recognising "a song I don't know" would need retraining with an extra "other" class.
+
+Each prediction is logged with these measurements (metadata only, never audio) so the thresholds can be tuned from real use.
 
 Errors always look like `{"error": {"code": "...", "message": "..."}}`:
 
@@ -81,6 +97,8 @@ Defaults live in `app/config.py`. Override any of them with an environment varia
 | `SONG_MIN_DURATION_SECONDS` / `SONG_MAX_DURATION_SECONDS` | `5` / `25` |
 | `SONG_MAX_UPLOAD_BYTES` | `5242880` (5 MB) |
 | `SONG_CORS_ORIGINS` | `["http://localhost:3000"]` (JSON list) |
+| `SONG_SCREENING_ENABLED` | `true` |
+| `SONG_FAMILIARITY_THRESHOLD` | `0.10` |
 | `SONG_CORS_ORIGIN_REGEX` | none (e.g. `https://cnn-song-detector(-[a-z0-9-]+)?\.vercel\.app` for Vercel previews) |
 
 ## How a recording is split

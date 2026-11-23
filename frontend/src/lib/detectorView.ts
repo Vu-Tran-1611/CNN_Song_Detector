@@ -6,6 +6,7 @@ import {
   type DetectorErrorCode,
   type DetectorState,
 } from "./detectorState";
+import { statusOf, type NoMusicReason } from "./types";
 
 export type LedTone = "off" | "green" | "amber" | "red";
 export type ButtonMode = "listen" | "starting" | "locked" | "stop";
@@ -43,6 +44,13 @@ const ERROR_LCD: Record<DetectorErrorCode, string> = {
   "too-large": "TOO LARGE",
   "bad-audio": "BAD AUDIO",
   unknown: "ERROR",
+};
+
+const NO_MUSIC_MESSAGE: Record<NoMusicReason, string> = {
+  silence: "It's too quiet. Play a song closer to the mic.",
+  noise: "Only noise was heard. Try somewhere quieter.",
+  tone: "That's a steady tone, not a song.",
+  speech: "That sounds like talking, not music.",
 };
 
 const pad2 = (n: number) => String(Math.max(0, Math.floor(n))).padStart(2, "0");
@@ -109,8 +117,29 @@ export function describe(state: DetectorState, now: number): DetectorView {
       };
 
     case "result": {
-      const { recognized, song, probability } = state.prediction;
-      return recognized
+      const { song, probability, reason } = state.prediction;
+      const status = statusOf(state.prediction);
+      if (status === "no_music" || !song) {
+        const message =
+          status === "no_music"
+            ? NO_MUSIC_MESSAGE[reason ?? "silence"]
+            : "I only know the 10 songs on the shelf.";
+        return {
+          top: status === "no_music" ? "NO MUSIC" : "UNKNOWN SONG",
+          main: "--.-",
+          unit: "%",
+          led: "amber",
+          button: "listen",
+          hint: status === "no_music" ? message : "Play one of the 10 songs and try again.",
+          sr: status === "no_music" ? `No music detected. ${message}` : `Not one of my 10 songs. ${message}`,
+          highlight: null,
+          screen:
+            status === "no_music"
+              ? { label: "NOW PLAYING", title: "No music detected", subtitle: message, tone: "guess" }
+              : { label: "NOT IN MY LIST", title: "Not one of my 10 songs", subtitle: message, tone: "guess" },
+        };
+      }
+      return status === "recognized"
         ? {
             top: "RECOGNIZED",
             main: percent(probability),

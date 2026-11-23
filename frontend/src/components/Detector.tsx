@@ -30,6 +30,7 @@ import {
 } from "@/lib/detectorState";
 import { describe } from "@/lib/detectorView";
 import { recentStore } from "@/lib/recent";
+import { statusOf } from "@/lib/types";
 
 const subscribeToNothing = () => () => {};
 
@@ -63,7 +64,7 @@ export function Detector() {
       const prediction = await predict(recording.blob);
       dispatch({ type: "PREDICTED", prediction });
       recentStore.add(prediction);
-      if (prediction.recognized) navigator.vibrate?.([25, 40, 25]);
+      if (statusOf(prediction) === "recognized") navigator.vibrate?.([25, 40, 25]);
     } catch (error) {
       dispatch({ type: "FAILED", error: toDetectorError(error, "Something went wrong. Try again.") });
     } finally {
@@ -130,7 +131,7 @@ export function Detector() {
   const view = describe(state, now);
   const progress = Math.min(1, elapsedSeconds(state, now) / MAX_RECORDING_SECONDS);
 
-  const shown = useCountUp(state.status === "result" ? state.prediction.probability : null);
+  const shown = useCountUp(state.status === "result" && state.prediction.song ? state.prediction.probability : null);
   const lcdMain = shown === null ? view.main : (shown * 100).toFixed(1).padStart(view.main.length, "!");
 
   return (

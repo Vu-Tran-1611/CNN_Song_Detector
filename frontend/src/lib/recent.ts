@@ -13,6 +13,7 @@ export type RecentDetection = {
 const EMPTY: RecentDetection[] = [];
 
 export function addRecent(list: RecentDetection[], prediction: Prediction): RecentDetection[] {
+  if (!prediction.song) return list;
   const item: RecentDetection = {
     songId: prediction.song.id,
     title: prediction.song.title,

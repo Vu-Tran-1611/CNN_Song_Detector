@@ -1,7 +1,7 @@
 """Predict a song from a full recording: chunk it, classify each chunk, average."""
 
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 import torch
 import torch.nn.functional as F
@@ -16,6 +16,7 @@ class Prediction:
     confidence: float
     probabilities: List[float]
     chunk_predictions: List[int]
+    fingerprints: Optional[torch.Tensor] = field(default=None, repr=False)
 
 
 def split_into_clips(waveform: torch.Tensor, overlap_last: bool = False) -> List[torch.Tensor]:
@@ -53,7 +54,8 @@ def predict(
         raise ValueError("The recording is empty.")
 
     mels = torch.stack([waveform_to_mel(clip) for clip in clips]).to(device)
-    probabilities = F.softmax(model(mels), dim=1).cpu()
+    features = model.global_pool(model.features(mels)).flatten(1)
+    probabilities = F.softmax(model.classifier(features), dim=1).cpu()
 
     average = probabilities.mean(dim=0)
     label = int(torch.argmax(average))
@@ -62,4 +64,5 @@ def predict(
         confidence=float(average[label]),
         probabilities=average.tolist(),
         chunk_predictions=probabilities.argmax(dim=1).tolist(),
+        fingerprints=F.normalize(features, dim=1).cpu(),
     )

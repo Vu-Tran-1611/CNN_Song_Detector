@@ -14,7 +14,8 @@ from app.api.deps import get_predictor
 from app.config import CONFIDENCE_THRESHOLD, Settings
 from app.main import create_app
 from app.ml.constants import NUM_CLASSES, SAMPLE_RATE
-from app.services.predictor import Song, SongPredictor, is_recognized
+from app.ml.familiarity import FamiliarityIndex
+from app.services.predictor import Song, SongPredictor, decide_status, is_recognized
 
 
 def wav(seconds: float, sample_rate: int = SAMPLE_RATE) -> bytes:
@@ -52,11 +53,20 @@ def test_predict_returns_contract(client):
     response = client.post("/api/predict", files=upload(wav(10.0)))
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"recognized", "song", "probability", "threshold"}
-    assert set(body["song"]) == {"id", "title", "artist"}
-    assert 0 <= body["probability"] <= 1
+    assert set(body) == {"status", "recognized", "song", "probability", "threshold", "reason"}
     assert body["threshold"] == CONFIDENCE_THRESHOLD
-    assert body["recognized"] == (body["probability"] >= CONFIDENCE_THRESHOLD)
+
+
+def test_steady_tone_is_not_music(client):
+    body = client.post("/api/predict", files=upload(wav(10.0))).json()
+    assert body == {"status": "no_music", "recognized": False, "song": None, "probability": 0.0, "threshold": CONFIDENCE_THRESHOLD, "reason": "tone"}
+
+
+def test_silence_is_not_music(client):
+    silence = io.BytesIO()
+    sf.write(silence, np.zeros(10 * SAMPLE_RATE, dtype=np.float32), SAMPLE_RATE, format="WAV", subtype="PCM_16")
+    body = client.post("/api/predict", files=upload(silence.getvalue())).json()
+    assert (body["status"], body["reason"], body["song"]) == ("no_music", "silence", None)
 
 
 def test_predict_accepts_a_full_20_second_recording(client):
@@ -109,17 +119,30 @@ def test_cors_allows_next_dev_server(client):
     assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
 
 
+class _Fingerprint(torch.nn.Module):
+    def forward(self, x):
+        return torch.ones(x.shape[0], 128, 1, 1)
+
+
+class _FixedLogits(torch.nn.Module):
+    def __init__(self, logits):
+        super().__init__()
+        self.logits = logits
+
+    def forward(self, x):
+        return self.logits.expand(x.shape[0], -1)
+
+
 class StubModel(torch.nn.Module):
-    """Always gives `probability` to `label`, the rest spread over the other songs."""
+    """Same parts as SongCNN; always gives `probability` to `label`, the rest spread over the other songs."""
 
     def __init__(self, label: int, probability: float):
         super().__init__()
         logits = torch.full((NUM_CLASSES,), math.log((1 - probability) / (NUM_CLASSES - 1)))
         logits[label] = math.log(probability)
-        self.logits = logits
-
-    def forward(self, x):
-        return self.logits.expand(x.shape[0], -1)
+        self.features = _Fingerprint()
+        self.global_pool = torch.nn.Identity()
+        self.classifier = _FixedLogits(logits)
 
 
 SONGS = {i: Song(id=i, title=f"Song {i}", artist="Artist") for i in range(NUM_CLASSES)}
@@ -133,7 +156,24 @@ def stub_predictor(label: int, probability: float) -> SongPredictor:
         min_duration_seconds=5.0,
         max_duration_seconds=25.0,
         max_upload_bytes=5 * 1024 * 1024,
+        screening=False,
     )
+
+
+def test_status_order():
+    assert decide_status("speech", 0.01, 0.10, 0.99, 0.80) == "no_music"
+    assert decide_status(None, 0.20, 0.10, 0.99, 0.80) == "unknown"
+    assert decide_status(None, 0.05, 0.10, 0.99, 0.80) == "recognized"
+    assert decide_status(None, 0.05, 0.10, 0.60, 0.80) == "not_sure"
+    assert decide_status(None, None, None, 0.99, 0.80) == "recognized"
+
+
+def test_unfamiliar_audio_is_unknown():
+    predictor = stub_predictor(label=2, probability=0.99)
+    predictor.familiarity_index = FamiliarityIndex(-torch.ones(5, 128))
+    predictor.familiarity_threshold = 0.10
+    result = predictor.predict_audio(wav(10.0))
+    assert (result.status, result.song, result.probability) == ("unknown", None, 0.0)
 
 
 def test_is_recognized_boundary():
@@ -160,6 +200,8 @@ def test_route_uses_injected_predictor():
     with TestClient(app) as c:
         body = c.post("/api/predict", files=upload(wav(7.0))).json()
     assert body == {
+        "status": "not_sure",
+        "reason": None,
         "recognized": False,
         "song": {"id": 1, "title": "Song 1", "artist": "Artist"},
         "probability": 0.62,

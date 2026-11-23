@@ -64,3 +64,10 @@ describe("recentStore", () => {
     unsubscribe();
   });
 });
+
+describe("addRecent without a song", () => {
+  it("ignores no-music and unknown results", () => {
+    const list = addRecent([], prediction(1));
+    expect(addRecent(list, { status: "no_music", recognized: false, song: null, probability: 0, threshold: 0.8, reason: "tone" })).toBe(list);
+  });
+});

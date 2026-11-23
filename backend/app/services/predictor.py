@@ -10,12 +10,14 @@ import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Literal, Optional
 
 import torch
 
 from app.config import Settings
 from app.ml import load_audio, load_checkpoint, predict
+from app.ml.familiarity import FamiliarityIndex
+from app.ml.screening import screen_audio
 from app.ml.constants import CLIP_SAMPLES, SAMPLE_RATE
 
 logger = logging.getLogger("song_detector")
@@ -52,18 +54,42 @@ class Song:
     artist: str
 
 
+Status = Literal["recognized", "not_sure", "unknown", "no_music"]
+
+
 @dataclass(frozen=True)
 class PredictionResult:
-    song: Song
+    status: Status
+    song: Optional[Song]
     probability: float
-    recognized: bool
     threshold: float
+    reason: Optional[str]
     chunk_predictions: List[int]
     duration_seconds: float
+    familiarity: Optional[float] = None
+
+    @property
+    def recognized(self) -> bool:
+        return self.status == "recognized"
 
 
 def is_recognized(probability: float, threshold: float) -> bool:
     return probability >= threshold
+
+
+def decide_status(
+    no_music_reason: Optional[str],
+    familiarity: Optional[float],
+    familiarity_threshold: Optional[float],
+    probability: float,
+    threshold: float,
+) -> Status:
+    """Order matters: not music at all, then not like any known song, then the confidence threshold."""
+    if no_music_reason is not None:
+        return "no_music"
+    if familiarity is not None and familiarity_threshold is not None and familiarity > familiarity_threshold:
+        return "unknown"
+    return "recognized" if is_recognized(probability, threshold) else "not_sure"
 
 
 def load_songs(path: Path, label_to_song: Dict[int, str]) -> Dict[int, Song]:
@@ -86,6 +112,9 @@ class SongPredictor:
         max_duration_seconds: float,
         max_upload_bytes: int,
         device: str = "cpu",
+        screening: bool = True,
+        familiarity_index: Optional[FamiliarityIndex] = None,
+        familiarity_threshold: Optional[float] = None,
     ):
         self.model = model
         self._songs = songs
@@ -94,10 +123,14 @@ class SongPredictor:
         self.max_duration_seconds = max_duration_seconds
         self.max_upload_bytes = max_upload_bytes
         self.device = device
+        self.screening = screening
+        self.familiarity_index = familiarity_index
+        self.familiarity_threshold = familiarity_threshold
 
     @classmethod
     def from_settings(cls, settings: Settings) -> "SongPredictor":
         model, label_to_song = load_checkpoint(settings.model_path)
+        index = FamiliarityIndex.load(settings.reference_path) if settings.familiarity_threshold is not None else None
         return cls(
             model=model,
             songs=load_songs(settings.songs_path, label_to_song),
@@ -105,6 +138,9 @@ class SongPredictor:
             min_duration_seconds=settings.min_duration_seconds,
             max_duration_seconds=settings.max_duration_seconds,
             max_upload_bytes=settings.max_upload_bytes,
+            screening=settings.screening_enabled,
+            familiarity_index=index,
+            familiarity_threshold=settings.familiarity_threshold,
         )
 
     @property
@@ -113,7 +149,11 @@ class SongPredictor:
 
     def warm_up(self) -> None:
         """Run one prediction on silence so the first real request isn't slow."""
-        predict(self.model, torch.zeros(1, CLIP_SAMPLES), device=self.device)
+        silence = torch.zeros(1, CLIP_SAMPLES)
+        prediction = predict(self.model, silence, device=self.device)
+        screen_audio(silence)
+        if self.familiarity_index is not None and prediction.fingerprints is not None:
+            self.familiarity_index.distance(prediction.fingerprints)
 
     def predict_audio(self, data: bytes) -> PredictionResult:
         if len(data) > self.max_upload_bytes:
@@ -131,23 +171,48 @@ class SongPredictor:
         if duration > self.max_duration_seconds:
             raise AudioTooLongError(f"Recording must be at most {self.max_duration_seconds:g} seconds.")
 
+        screen = screen_audio(waveform) if self.screening else None
         prediction = predict(self.model, waveform, device=self.device, overlap_last=True)
+        familiarity = (
+            self.familiarity_index.distance(prediction.fingerprints)
+            if self.familiarity_index is not None and prediction.fingerprints is not None
+            else None
+        )
+        status = decide_status(
+            screen.reason if screen else None,
+            familiarity,
+            self.familiarity_threshold,
+            prediction.confidence,
+            self.threshold,
+        )
+        has_song = status in ("recognized", "not_sure")
         result = PredictionResult(
-            song=self._songs[prediction.label],
-            probability=prediction.confidence,
-            recognized=is_recognized(prediction.confidence, self.threshold),
+            status=status,
+            song=self._songs[prediction.label] if has_song else None,
+            probability=prediction.confidence if has_song else 0.0,
             threshold=self.threshold,
+            reason=screen.reason if screen and status == "no_music" else None,
             chunk_predictions=prediction.chunk_predictions,
             duration_seconds=duration,
+            familiarity=familiarity,
         )
 
         logger.info(
-            "prediction song=%r probability=%.4f recognized=%s chunks=%s duration=%.1fs time=%.0fms",
-            result.song.title,
-            result.probability,
-            result.recognized,
-            result.chunk_predictions,
+            "prediction status=%s reason=%s model_guess=%r probability=%.4f familiarity=%s chunks=%s "
+            "duration=%.1fs %s time=%.0fms",
+            status,
+            result.reason,
+            self._songs[prediction.label].title,
+            prediction.confidence,
+            f"{familiarity:.4f}" if familiarity is not None else "off",
+            prediction.chunk_predictions,
             duration,
+            (
+                f"rms={screen.rms_db:.1f}dB tone={screen.tone_share:.2f} flat={screen.flatness:.3f} "
+                f"pause={screen.pause_ratio:.3f} jump={screen.jumpiness:.2f} flux={screen.flux:.3f}"
+                if screen
+                else "screening=off"
+            ),
             (time.perf_counter() - started) * 1000,
         )
         return result

@@ -64,3 +64,30 @@ group("song screen", () => {
     expect(describe({ status: "analyzing", recording, slow: false }, 0).screen).toMatchObject({ title: "Identifying…", tone: "busy" });
   });
 });
+
+group("non-music and unknown results", () => {
+  const resultOf = (prediction: Prediction): DetectorState => ({ status: "result", recording, prediction });
+
+  it("explains why the audio is not music", () => {
+    const view = describe(
+      resultOf({ status: "no_music", recognized: false, song: null, probability: 0, threshold: 0.8, reason: "speech" }),
+      0,
+    );
+    expect(view.top).toBe("NO MUSIC");
+    expect(view.main).toBe("--.-");
+    expect(view.screen).toMatchObject({ title: "No music detected", subtitle: "That sounds like talking, not music." });
+    expect(view.highlight).toBeNull();
+  });
+
+  it("says when the music is not one of the 10 songs", () => {
+    const view = describe(resultOf({ status: "unknown", recognized: false, song: null, probability: 0, threshold: 0.8 }), 0);
+    expect(view.top).toBe("UNKNOWN SONG");
+    expect(view.screen.title).toBe("Not one of my 10 songs");
+    expect(view.highlight).toBeNull();
+  });
+
+  it("still understands responses without a status (older backend)", () => {
+    const view = describe(resultOf({ recognized: true, song, probability: 0.9, threshold: 0.8 }), 0);
+    expect(view.top).toBe("RECOGNIZED");
+  });
+});

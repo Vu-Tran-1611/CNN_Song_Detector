@@ -5,11 +5,11 @@ const STEPS = [
   },
   {
     title: "Analyze",
-    text: "The recording is cut into 5-second pieces. Each becomes a mel spectrogram, a picture of the sound, and a CNN (convolutional neural network) reads each picture.",
+    text: "First it checks there is music at all: silence, noise, steady tones and talking are turned away. Then the recording is cut into 5-second pieces; each becomes a mel spectrogram, a picture of the sound, and a CNN (convolutional neural network) reads each picture.",
   },
   {
     title: "Result",
-    text: "The pieces' answers are averaged. At 80% or more you get the song; below that, you get a best guess.",
+    text: "The pieces' answers are averaged. At 80% or more you get the song; below that, a best guess. If the sound is nothing like the songs it learned, it says so instead of guessing.",
   },
 ];
 
