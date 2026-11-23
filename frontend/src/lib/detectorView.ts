@@ -16,6 +16,7 @@ export type SongScreen = {
   title: string;
   subtitle?: string;
   tone: "empty" | "busy" | "recognized" | "guess" | "error";
+  songId?: number;
 };
 
 export type DetectorView = {
@@ -119,7 +120,7 @@ export function describe(state: DetectorState, now: number): DetectorView {
             hint: "Tap to listen again",
             sr: `Recognized ${song.title} by ${song.artist}, ${percent(probability)} percent sure.`,
             highlight: { songId: song.id, kind: "recognized" },
-            screen: { label: "NOW PLAYING", title: song.title, subtitle: song.artist, tone: "recognized" },
+            screen: { label: "NOW PLAYING", title: song.title, subtitle: song.artist, tone: "recognized", songId: song.id },
           }
         : {
             top: "NOT SURE",
@@ -130,7 +131,7 @@ export function describe(state: DetectorState, now: number): DetectorView {
             hint: "Not sure. Try closer to the speaker.",
             sr: `Not sure. Maybe ${song.title} by ${song.artist}, ${percent(probability)} percent.`,
             highlight: { songId: song.id, kind: "guess" },
-            screen: { label: "BEST GUESS", title: `Maybe ${song.title}?`, subtitle: song.artist, tone: "guess" },
+            screen: { label: "BEST GUESS", title: `Maybe ${song.title}?`, subtitle: song.artist, tone: "guess", songId: song.id },
           };
     }
 

@@ -31,7 +31,7 @@ group("describe", () => {
   it("shows a recognized song with its probability and highlights it", () => {
     const view = describe(result(true, 0.9841), 0);
     expect(view.top).toBe("RECOGNIZED");
-    expect(view.screen).toEqual({ label: "NOW PLAYING", title: "We Don't Talk Any More", subtitle: "Charlie Puth", tone: "recognized" });
+    expect(view.screen).toEqual({ label: "NOW PLAYING", title: "We Don't Talk Any More", subtitle: "Charlie Puth", tone: "recognized", songId: 9 });
     expect(view.main).toBe("98.4");
     expect(view.unit).toBe("%");
     expect(view.led).toBe("green");
@@ -41,7 +41,7 @@ group("describe", () => {
   it("shows 'not sure' with the best guess", () => {
     const view = describe(result(false, 0.62), 0);
     expect(view.top).toBe("NOT SURE");
-    expect(view.screen).toEqual({ label: "BEST GUESS", title: "Maybe We Don't Talk Any More?", subtitle: "Charlie Puth", tone: "guess" });
+    expect(view.screen).toEqual({ label: "BEST GUESS", title: "Maybe We Don't Talk Any More?", subtitle: "Charlie Puth", tone: "guess", songId: 9 });
     expect(view.main).toBe("62.0");
     expect(view.led).toBe("amber");
     expect(view.highlight).toEqual({ songId: 9, kind: "guess" });

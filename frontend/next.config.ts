@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     },
   },
   allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*", "*.local"],
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "*.mzstatic.com" }],
+  },
   async rewrites() {
     return isDev ? [{ source: "/api/:path*", destination: `${BACKEND_URL}/api/:path*` }] : [];
   },

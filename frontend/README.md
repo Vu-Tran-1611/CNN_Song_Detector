@@ -18,6 +18,8 @@ When a song is recognized, the LCD percent rolls up, the record pops into place 
 
 A sticky **top navbar** (icons + labels; icons only on phones) jumps to each section and highlights the one being read. Below the app, full width: **How it works**, **Inside the model** (the CNN layer by layer, with output shapes and parameter counts measured from the trained model, plus how it was trained), **About me**, **Projects** (a featured card plus compact rows with demo/GitHub links), and a footer with the author's links.
 
+Each song shows its album artwork, loaded directly from Apple's catalog (`src/lib/covers.ts`, found with the iTunes Search API), as the label of its vinyl record and as a thumbnail on the Now Playing screen. The repo contains no artwork files. Each record and thumbnail links to the song on Apple Music.
+
 The app has its own icon (generated in `src/app/icon.tsx` and `apple-icon.tsx`) and a web app manifest, so "Add to Home Screen" on a phone opens it full-screen like an app.
 
 Built mobile-first: one column on phones, the panel centered on tablets, two columns on desktop.
