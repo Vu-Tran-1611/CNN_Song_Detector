@@ -3,9 +3,10 @@
 import { useEffect, useMemo } from "react";
 
 import type { Recording } from "@/lib/detectorState";
+import type { Prediction } from "@/lib/types";
 
-/** Shown only with ?debug=1: play back / download the last recording and check mic settings. */
-export function DebugPanel({ recording }: { recording: Recording | null }) {
+/** Shown only with ?debug=1: the last recording, the mic settings, and the raw backend response. */
+export function DebugPanel({ recording, prediction }: { recording?: Recording; prediction?: Prediction }) {
   const url = useMemo(() => (recording ? URL.createObjectURL(recording.blob) : null), [recording]);
   useEffect(() => () => void (url && URL.revokeObjectURL(url)), [url]);
 
@@ -41,6 +42,14 @@ export function DebugPanel({ recording }: { recording: Recording | null }) {
           <a href={url} download="recording.wav" className="font-semibold text-accent-deep underline">
             Download recording.wav
           </a>
+          {prediction && (
+            <div>
+              <h3 className="mb-1 font-semibold text-ink">Backend response</h3>
+              <pre className="overflow-x-auto rounded-xl bg-white/60 p-3 text-xs text-ink">
+                {JSON.stringify(prediction, null, 2)}
+              </pre>
+            </div>
+          )}
         </div>
       )}
     </section>

@@ -25,7 +25,10 @@ function initials(title: string) {
 }
 
 /** A vinyl record drawn with CSS, with a colored center label (no album art). */
-export function VinylRecord({ song, active = false }: { song: Song; active?: boolean }) {
+export type VinylHighlight = "recognized" | "guess" | null;
+
+/** recognized: orange ring + spinning. guess: dashed outline, not spinning. */
+export function VinylRecord({ song, highlight = null }: { song: Song; highlight?: VinylHighlight }) {
   const color = LABEL_COLORS[song.id % LABEL_COLORS.length];
 
   return (
@@ -33,7 +36,8 @@ export function VinylRecord({ song, active = false }: { song: Song; active?: boo
       <div
         className={[
           "@container relative aspect-square w-full rounded-full bg-[#16181d] shadow-[var(--shadow-soft)]",
-          active ? "ring-4 ring-accent ring-offset-4 ring-offset-canvas" : "",
+          highlight === "recognized" ? "ring-4 ring-accent ring-offset-4 ring-offset-canvas motion-safe:animate-spin-record" : "",
+          highlight === "guess" ? "outline-2 outline-offset-6 outline-dashed outline-accent/70" : "",
         ].join(" ")}
         style={{
           backgroundImage:

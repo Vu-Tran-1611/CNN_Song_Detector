@@ -8,9 +8,31 @@ type LcdDisplayProps = {
   srStatus: string;
 };
 
+const MARQUEE_FROM = 18; // characters; longer text scrolls
+
 /** Unlit segments shown faintly behind the digits, like a real LCD. */
 function ghostOf(text: string, segment: string) {
   return text.replace(/[^.:]/g, segment);
+}
+
+function TopLine({ text }: { text: string }) {
+  if (text.length < MARQUEE_FROM) {
+    return <div className="truncate text-center">{text}</div>;
+  }
+  // Two copies side by side, shifted by half their width: a seamless loop.
+  // With "reduce motion" on, it shows the start of the text instead.
+  return (
+    <div className="overflow-hidden">
+      <div
+        key={text}
+        className="flex w-max motion-safe:animate-marquee motion-reduce:w-full"
+        style={{ animationDuration: `${Math.max(6, text.length * 0.32)}s` }}
+      >
+        <span className="whitespace-nowrap pr-16 motion-reduce:truncate motion-reduce:pr-0">{text}</span>
+        <span className="whitespace-nowrap pr-16 motion-reduce:hidden">{text}</span>
+      </div>
+    </div>
+  );
 }
 
 export function LcdDisplay({ topLine, main, unit, footLeft, footRight, srStatus }: LcdDisplayProps) {
@@ -21,8 +43,8 @@ export function LcdDisplay({ topLine, main, unit, footLeft, footRight, srStatus 
       </p>
 
       <div aria-hidden="true">
-        <div className="relative truncate text-center font-lcd14 text-[13px] tracking-wider sm:text-sm">
-          {topLine}
+        <div className="font-lcd14 text-[13px] tracking-wider sm:text-sm">
+          <TopLine text={topLine} />
         </div>
 
         <div className="relative mt-3 flex items-end justify-center gap-1.5">

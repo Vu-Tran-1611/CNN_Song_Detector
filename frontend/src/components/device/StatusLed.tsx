@@ -1,4 +1,6 @@
-export type LedTone = "off" | "green" | "amber" | "red";
+import type { LedTone } from "@/lib/detectorView";
+
+export type { LedTone };
 
 const TONE_CLASS: Record<LedTone, string> = {
   off: "bg-[#2c3348] shadow-[inset_1px_1px_3px_rgba(0,0,0,0.6)]",

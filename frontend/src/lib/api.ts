@@ -38,6 +38,12 @@ async function request<T>(path: string, init: RequestInit = {}, timeoutMs = DEFA
 
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as ApiErrorBody | null;
+    // Our backend always answers errors with {"error": {...}}. A 5xx without it
+    // comes from something in front of it: the dev proxy when the backend is
+    // down, or the host while the server is asleep/restarting.
+    if (!body?.error && response.status >= 500) {
+      throw new ApiError("network", "Can't reach the server.", response.status);
+    }
     throw new ApiError(
       body?.error?.code ?? "http_error",
       body?.error?.message ?? `Server error (${response.status}).`,

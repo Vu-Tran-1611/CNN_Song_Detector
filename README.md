@@ -20,7 +20,7 @@ CNN_Song_Detector/
 2. ✅ Extract the ML code (audio loading, mel spectrogram, CNN) into `backend/` and check that its results match the notebook
 3. ✅ FastAPI service: `POST /api/predict`, `GET /api/health`, `GET /api/songs`, plus a "not sure" confidence threshold
 4. ✅ Next.js app with microphone recording (raw audio → WAV, browser voice processing turned off)
-5. Connect frontend and backend: listen → analyze → result
+5. ✅ Connect frontend and backend: listen → analyze → result
 6. UI design and polish
 7. Deploy: backend (Docker) on Hugging Face Spaces, frontend on Vercel
 

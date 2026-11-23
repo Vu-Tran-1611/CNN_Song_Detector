@@ -5,104 +5,41 @@ import { useCallback, useEffect, useReducer, useRef, useState, useSyncExternalSt
 import { DebugPanel } from "@/components/DebugPanel";
 import { DevicePanel } from "@/components/device/DevicePanel";
 import { LcdDisplay } from "@/components/device/LcdDisplay";
-import { ListenButton, type ListenButtonMode } from "@/components/device/ListenButton";
+import { ListenButton } from "@/components/device/ListenButton";
 import { RecentStrip } from "@/components/device/RecentStrip";
-import type { LedTone } from "@/components/device/StatusLed";
 import { SongShelf } from "@/components/songs/SongShelf";
 import { RecorderError, useMicRecorder } from "@/hooks/useMicRecorder";
+import { ApiError, predict } from "@/lib/api";
 import {
   MAX_RECORDING_SECONDS,
-  MIN_RECORDING_SECONDS,
+  SLOW_ANALYSIS_MS,
   type DetectorError,
-  type DetectorState,
+  type Recording,
   canStop,
   detectorReducer,
   elapsedSeconds,
+  errorFromApi,
   initialDetectorState,
+  recordingOf,
   shouldAutoStop,
 } from "@/lib/detectorState";
-
-const ERROR_LCD: Record<DetectorError["code"], string> = {
-  "mic-denied": "MIC BLOCKED",
-  "no-mic": "NO MIC",
-  unsupported: "NOT SUPPORTED",
-  interrupted: "STOPPED",
-  unknown: "ERROR",
-};
-
-function pad2(n: number) {
-  return String(Math.max(0, Math.floor(n))).padStart(2, "0");
-}
-
-/** What the LCD, LED, button and hint show for each state. */
-function describe(state: DetectorState, now: number) {
-  const elapsed = elapsedSeconds(state, now);
-  switch (state.status) {
-    case "idle":
-      return {
-        top: "READY",
-        main: "--.-",
-        unit: "%",
-        led: "off" as LedTone,
-        button: "listen" as ListenButtonMode,
-        hint: "Tap to identify a song",
-        sr: "Ready. Press Listen to identify a song.",
-      };
-    case "requesting":
-      return {
-        top: "ALLOW MIC",
-        main: "--.-",
-        unit: "%",
-        led: "amber" as LedTone,
-        button: "starting" as ListenButtonMode,
-        hint: "Allow the microphone to start listening",
-        sr: "Waiting for microphone permission.",
-      };
-    case "listening": {
-      const remaining = Math.ceil(MAX_RECORDING_SECONDS - elapsed);
-      const locked = !canStop(state, now);
-      const unlockIn = Math.ceil(MIN_RECORDING_SECONDS - elapsed);
-      return {
-        top: "LISTENING",
-        main: `00:${pad2(remaining)}`,
-        unit: undefined,
-        led: "green" as LedTone,
-        ledPulse: true,
-        button: (locked ? "locked" : "stop") as ListenButtonMode,
-        hint: locked ? `Listening… you can stop in ${unlockIn}s` : "Tap stop, or keep listening",
-        sr: locked ? "Listening." : "Listening. You can stop now.",
-      };
-    }
-    case "recorded":
-      return {
-        top: "RECORDED",
-        main: `00:${pad2(Math.round(state.recording.durationSeconds))}`,
-        unit: undefined,
-        led: "off" as LedTone,
-        button: "listen" as ListenButtonMode,
-        hint: "Recorded. Tap to listen again",
-        sr: `Recorded ${state.recording.durationSeconds.toFixed(1)} seconds.`,
-      };
-    case "error":
-      return {
-        top: ERROR_LCD[state.error.code],
-        main: "Err",
-        unit: undefined,
-        led: "red" as LedTone,
-        button: "listen" as ListenButtonMode,
-        hint: state.error.message,
-        sr: `Error: ${state.error.message}`,
-      };
-  }
-}
+import { describe } from "@/lib/detectorView";
+import { recentStore } from "@/lib/recent";
 
 const subscribeToNothing = () => () => {};
+
+function toDetectorError(error: unknown, fallback: string): DetectorError {
+  if (error instanceof RecorderError) return error.detail;
+  if (error instanceof ApiError) return errorFromApi(error.code, error.message);
+  return { code: "unknown", message: fallback };
+}
 
 export function Detector() {
   const [state, dispatch] = useReducer(detectorReducer, initialDetectorState);
   const [now, setNow] = useState(0);
   const stopping = useRef(false);
-  const lastRecording = state.status === "recorded" ? state.recording : null;
+
+  const recent = useSyncExternalStore(recentStore.subscribe, recentStore.getSnapshot, recentStore.getServerSnapshot);
 
   // ?debug=1 shows the debug panel (read on the client only).
   const debug = useSyncExternalStore(
@@ -115,24 +52,40 @@ export function Detector() {
     onInterrupted: (error) => dispatch({ type: "FAILED", error }),
   });
 
+  /** Send the recording to the backend and show the answer. */
+  const analyze = useCallback(async (recording: Recording) => {
+    const slowTimer = setTimeout(() => dispatch({ type: "ANALYSIS_SLOW" }), SLOW_ANALYSIS_MS);
+    try {
+      const prediction = await predict(recording.blob);
+      dispatch({ type: "PREDICTED", prediction });
+      recentStore.add(prediction);
+    } catch (error) {
+      dispatch({ type: "FAILED", error: toDetectorError(error, "Something went wrong. Try again.") });
+    } finally {
+      clearTimeout(slowTimer);
+    }
+  }, []);
+
   const stop = useCallback(async () => {
     if (stopping.current) return;
     stopping.current = true;
     try {
-      dispatch({ type: "STOPPED", recording: await recorder.stop() });
+      const recording = await recorder.stop();
+      dispatch({ type: "STOPPED", recording });
+      await analyze(recording);
     } catch (error) {
-      dispatch({ type: "FAILED", error: error instanceof RecorderError ? error.detail : { code: "unknown", message: "Recording failed." } });
+      dispatch({ type: "FAILED", error: toDetectorError(error, "Recording failed.") });
     } finally {
       stopping.current = false;
     }
-  }, [recorder]);
+  }, [recorder, analyze]);
 
   const press = useCallback(async () => {
     if (state.status === "listening") {
       if (canStop(state, Date.now())) await stop();
       return;
     }
-    if (state.status === "requesting") return;
+    if (state.status === "requesting" || state.status === "analyzing") return;
 
     dispatch({ type: "START" });
     try {
@@ -141,7 +94,7 @@ export function Detector() {
       setNow(startedAt);
       dispatch({ type: "MIC_READY", startedAt });
     } catch (error) {
-      dispatch({ type: "FAILED", error: error instanceof RecorderError ? error.detail : { code: "unknown", message: "Couldn't start the microphone." } });
+      dispatch({ type: "FAILED", error: toDetectorError(error, "Couldn't start the microphone.") });
     }
   }, [state, recorder, stop]);
 
@@ -162,7 +115,10 @@ export function Detector() {
     const onHide = () => {
       if (document.visibilityState !== "hidden") return;
       recorder.cancel();
-      dispatch({ type: "FAILED", error: { code: "interrupted", message: "Recording stopped because the app went to the background. Tap to try again." } });
+      dispatch({
+        type: "FAILED",
+        error: { code: "interrupted", message: "Recording stopped because the app went to the background. Tap to try again." },
+      });
     };
     document.addEventListener("visibilitychange", onHide);
     return () => document.removeEventListener("visibilitychange", onHide);
@@ -187,12 +143,14 @@ export function Detector() {
           <p className="min-h-[2.75rem] max-w-[18rem] text-center text-base font-medium leading-snug text-panel-ink">{view.hint}</p>
         </div>
 
-        <RecentStrip items={[]} />
+        <RecentStrip items={recent} />
       </DevicePanel>
 
       <div className="flex min-w-0 flex-col gap-8">
-        <SongShelf />
-        {debug && <DebugPanel recording={lastRecording} />}
+        <SongShelf highlight={view.highlight} />
+        {debug && (
+          <DebugPanel recording={recordingOf(state)} prediction={state.status === "result" ? state.prediction : undefined} />
+        )}
       </div>
     </div>
   );

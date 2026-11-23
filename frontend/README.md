@@ -1,6 +1,18 @@
 # Frontend
 
-A Next.js web app styled as a soft-UI radio. Tap **Listen**, it records 5–10 seconds from the microphone, and (from step 5) the backend tells you which song is playing.
+A Next.js web app styled as a soft-UI radio. Tap **Listen**, it records 5–10 seconds from the microphone, sends the recording to the backend, and shows which song is playing.
+
+## What you see
+
+| Result | LCD | Shelf | LED |
+|---|---|---|---|
+| Recognized (≥ 80%) | `ATTENTION - CHARLIE PUTH` / `98.4 %` | the record gets an orange ring and spins | green |
+| Not sure (< 80%) | `NOT SURE - MAYBE ATTENTION` / `62.0 %` | dashed outline on the best guess | amber |
+| Error | `NO SERVER`, `MIC BLOCKED`, `TOO SHORT`… / `Err` | | red |
+
+Long LCD text scrolls. With the system's "reduce motion" setting on, nothing scrolls or spins. If the server needs more than 4 seconds (e.g. a free host waking up), the LCD shows `WAKING UP`.
+
+The **recent strip** keeps the last 3 results, saved in this browser only (`localStorage`). Nothing is sent anywhere else.
 
 Built mobile-first: one column on phones, the panel centered on tablets, two columns on desktop.
 
@@ -16,7 +28,7 @@ npm run dev
 
 Open http://localhost:3000. In development the page calls `/api/...` on the Next.js server, which forwards to the backend (`BACKEND_URL` in `next.config.ts`, default `http://localhost:8765`), so no CORS setup is needed.
 
-Add `?debug=1` to the URL to see a debug panel under the song list. It plays back and downloads the last recording, and shows its sample rate and the mic settings the browser actually applied.
+Add `?debug=1` to the URL to see a debug panel under the song list. It plays back and downloads the last recording, and shows its sample rate, the mic settings the browser actually applied, and the raw backend response.
 
 ### Testing on a phone
 
@@ -34,7 +46,7 @@ This starts the dev server with a self-signed HTTPS certificate on all network i
 |---|---|
 | `npm run dev` | dev server on http://localhost:3000 |
 | `npm run dev:phone` | HTTPS dev server reachable from your local network |
-| `npm test` | unit tests (Vitest): WAV encoder, listening state machine |
+| `npm test` | unit tests (Vitest): WAV encoder, state machine, LCD text, recent list, API errors |
 | `npm run typecheck` | TypeScript check |
 | `npm run lint` | ESLint |
 | `npm run build` | production build |
@@ -60,7 +72,9 @@ src/
 ├── lib/
 │   ├── api.ts                # the only module that calls the backend
 │   ├── types.ts              # mirrors the backend's JSON
-│   ├── detectorState.ts      # listening flow as a state machine
+│   ├── detectorState.ts      # idle → requesting → listening → analyzing → result / error
+│   ├── detectorView.ts       # what the LCD, LED, button and shelf show for each state
+│   ├── recent.ts             # last 3 results, saved in localStorage
 │   └── audio/wav.ts          # Float32 → 16-bit WAV
 └── fonts/                    # DSEG7 / DSEG14 LCD fonts (SIL Open Font License, see DSEG-LICENSE.txt)
 ```

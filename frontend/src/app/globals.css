@@ -51,6 +51,17 @@
 
   --animate-idle-pulse: idle-pulse 2.4s ease-in-out infinite;
   --animate-led-pulse: led-pulse 1.2s ease-in-out infinite;
+  --animate-marquee: marquee var(--marquee-duration, 10s) linear infinite;
+  --animate-spin-record: spin 3.2s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 
   @keyframes idle-pulse {
     0%,

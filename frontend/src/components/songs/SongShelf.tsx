@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { getSongs } from "@/lib/api";
+import type { ShelfHighlight } from "@/lib/detectorView";
 import type { Song } from "@/lib/types";
 
 import { VinylRecord } from "./VinylRecord";
@@ -12,8 +13,9 @@ type ShelfState = { status: "loading" } | { status: "ready"; songs: Song[] } | {
 const ITEM_CLASS = "w-[7.5rem] shrink-0 snap-start sm:w-auto";
 
 /** "Songs I can recognize": the model's 10 songs as vinyl records. */
-export function SongShelf({ activeSongId }: { activeSongId?: number }) {
+export function SongShelf({ highlight }: { highlight: ShelfHighlight }) {
   const [state, setState] = useState<ShelfState>({ status: "loading" });
+  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -25,6 +27,18 @@ export function SongShelf({ activeSongId }: { activeSongId?: number }) {
       });
     return () => controller.abort();
   }, []);
+
+  // On phones the shelf scrolls sideways: bring the highlighted record into view.
+  const highlightedId = highlight?.songId;
+  useEffect(() => {
+    const list = listRef.current;
+    if (highlightedId === undefined || !list || list.scrollWidth <= list.clientWidth) return;
+    const item = list.querySelector<HTMLElement>(`[data-song-id="${highlightedId}"]`);
+    if (!item) return;
+    const left = item.offsetLeft - (list.clientWidth - item.offsetWidth) / 2;
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    list.scrollTo({ left, behavior: smooth ? "smooth" : "auto" });
+  }, [highlightedId, state.status]);
 
   return (
     <section aria-labelledby="shelf-title" className="min-w-0">
@@ -40,7 +54,10 @@ export function SongShelf({ activeSongId }: { activeSongId?: number }) {
           {state.message} The song list will appear when the backend is running.
         </p>
       ) : (
-        <ul className="-mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-6 pt-1 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-x-6 sm:gap-y-8 sm:overflow-visible sm:px-0 md:grid-cols-5 lg:grid-cols-3 xl:grid-cols-4">
+        <ul
+          ref={listRef}
+          className="relative -mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-6 pt-3 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-x-6 sm:gap-y-8 sm:overflow-visible sm:px-0 md:grid-cols-5 lg:grid-cols-3 xl:grid-cols-4"
+        >
           {state.status === "loading"
             ? Array.from({ length: 6 }, (_, i) => (
                 <li key={i} className={ITEM_CLASS} aria-hidden="true">
@@ -48,8 +65,8 @@ export function SongShelf({ activeSongId }: { activeSongId?: number }) {
                 </li>
               ))
             : state.songs.map((song) => (
-                <li key={song.id} className={ITEM_CLASS}>
-                  <VinylRecord song={song} active={song.id === activeSongId} />
+                <li key={song.id} data-song-id={song.id} className={ITEM_CLASS}>
+                  <VinylRecord song={song} highlight={highlight?.songId === song.id ? highlight.kind : null} />
                 </li>
               ))}
         </ul>
