@@ -3,12 +3,17 @@
 import { useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore } from "react";
 
 import { DebugPanel } from "@/components/DebugPanel";
+import { HowItWorks } from "@/components/HowItWorks";
+import { InfoSheet } from "@/components/InfoSheet";
+import { ClearIcon, InfoIcon } from "@/components/icons";
 import { DevicePanel } from "@/components/device/DevicePanel";
 import { LcdDisplay } from "@/components/device/LcdDisplay";
 import { ListenButton } from "@/components/device/ListenButton";
 import { NowPlayingScreen } from "@/components/device/NowPlayingScreen";
 import { RecentStrip } from "@/components/device/RecentStrip";
+import { RoundButton } from "@/components/device/RoundButton";
 import { SongShelf } from "@/components/songs/SongShelf";
+import { useCountUp } from "@/hooks/useCountUp";
 import { RecorderError, useMicRecorder } from "@/hooks/useMicRecorder";
 import { ApiError, predict } from "@/lib/api";
 import {
@@ -39,6 +44,7 @@ export function Detector() {
   const [state, dispatch] = useReducer(detectorReducer, initialDetectorState);
   const [now, setNow] = useState(0);
   const stopping = useRef(false);
+  const infoRef = useRef<HTMLDialogElement>(null);
 
   const recent = useSyncExternalStore(recentStore.subscribe, recentStore.getSnapshot, recentStore.getServerSnapshot);
 
@@ -60,6 +66,8 @@ export function Detector() {
       const prediction = await predict(recording.blob);
       dispatch({ type: "PREDICTED", prediction });
       recentStore.add(prediction);
+      // A short buzz when a song is recognized (Android; iPhones ignore it).
+      if (prediction.recognized) navigator.vibrate?.([25, 40, 25]);
     } catch (error) {
       dispatch({ type: "FAILED", error: toDetectorError(error, "Something went wrong. Try again.") });
     } finally {
@@ -128,34 +136,54 @@ export function Detector() {
   const view = describe(state, now);
   const progress = Math.min(1, elapsedSeconds(state, now) / MAX_RECORDING_SECONDS);
 
+  // The result's percent rolls up on the LCD, like real segment digits.
+  const shown = useCountUp(state.status === "result" ? state.prediction.probability : null);
+  // "!" is DSEG's digit-wide blank, so the digits don't shift while counting.
+  const lcdMain = shown === null ? view.main : (shown * 100).toFixed(1).padStart(view.main.length, "!");
+
   return (
     <div className="grid gap-10 lg:grid-cols-[26rem_minmax(0,1fr)] lg:items-start lg:gap-14">
       <DevicePanel led={view.led} ledPulse={view.ledPulse}>
         <div className="flex flex-col gap-3">
-          <LcdDisplay topLine={view.top} main={view.main} unit={view.unit} footLeft="CNN" footRight="10 SONGS" srStatus={view.sr} />
+          <LcdDisplay topLine={view.top} main={lcdMain} unit={view.unit} footLeft="CNN" footRight="10 SONGS" srStatus={view.sr} />
           <NowPlayingScreen screen={view.screen} />
         </div>
 
         <div className="flex flex-col items-center gap-4 py-2">
-          <ListenButton
-            mode={view.button}
-            progress={progress}
-            onPress={press}
-            getLevel={recorder.getLevel}
-            ariaLabel={view.button === "listen" ? "Listen: identify the song that's playing" : view.hint}
-          />
+          {/* Small side knobs around the big Listen button, as in the design */}
+          <div className="flex w-full items-center justify-between gap-2">
+            <RoundButton label="Info" icon={<InfoIcon className="size-5" />} onClick={() => infoRef.current?.showModal()} />
+            <ListenButton
+              mode={view.button}
+              progress={progress}
+              onPress={press}
+              getLevel={recorder.getLevel}
+              ariaLabel={view.button === "listen" ? "Listen: identify the song that's playing" : view.hint}
+            />
+            <RoundButton
+              label="Clear"
+              icon={<ClearIcon className="size-5" />}
+              onClick={recentStore.clear}
+              disabled={recent.length === 0}
+            />
+          </div>
           <p className="min-h-[2.75rem] max-w-[18rem] text-center text-base font-medium leading-snug text-panel-ink">{view.hint}</p>
         </div>
 
         <RecentStrip items={recent} />
       </DevicePanel>
 
-      <div className="flex min-w-0 flex-col gap-8">
+      <div className="flex min-w-0 flex-col gap-12">
         <SongShelf highlight={view.highlight} />
+        <section aria-labelledby="how-title">
+          <HowItWorks headingId="how-title" />
+        </section>
         {debug && (
           <DebugPanel recording={recordingOf(state)} prediction={state.status === "result" ? state.prediction : undefined} />
         )}
       </div>
+
+      <InfoSheet ref={infoRef} />
     </div>
   );
 }

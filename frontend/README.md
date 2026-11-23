@@ -12,7 +12,11 @@ A Next.js web app styled as a soft-UI radio. Tap **Listen**, it records 5–10 s
 
 Long LCD text scrolls. With the system's "reduce motion" setting on, nothing scrolls or spins. If the server needs more than 4 seconds (e.g. a free host waking up), the LCD shows `WAKING UP`.
 
-The **recent strip** keeps the last 3 results, saved in this browser only (`localStorage`). Nothing is sent anywhere else.
+The **recent strip** keeps the last 3 results, saved in this browser only (`localStorage`). Nothing is sent anywhere else. The small **Clear** knob empties it; the **Info** knob opens a "How it works" sheet (the same content is also shown under the song shelf).
+
+When a song is recognized, the LCD percent rolls up, the record pops into place and spins, and Android phones give a short buzz. With "reduce motion" on, all animations are skipped.
+
+The app has its own icon (generated in `src/app/icon.tsx` and `apple-icon.tsx`) and a web app manifest, so "Add to Home Screen" on a phone opens it full-screen like an app.
 
 Built mobile-first: one column on phones, the panel centered on tablets, two columns on desktop.
 
@@ -62,11 +66,13 @@ This starts the dev server with a self-signed HTTPS certificate on all network i
 
 ```
 src/
-├── app/                      # layout (fonts, viewport), page, design tokens in globals.css
+├── app/                      # layout, page, design tokens (globals.css), icon/apple-icon/manifest
 ├── components/
 │   ├── Detector.tsx          # ties together the state machine, recorder, timer and UI
 │   ├── DebugPanel.tsx        # ?debug=1
-│   ├── device/               # DevicePanel, LcdDisplay, NowPlayingScreen, ListenButton, StatusLed, RecentStrip
+│   ├── device/               # DevicePanel, LcdDisplay, NowPlayingScreen, ListenButton, RoundButton, StatusLed, RecentStrip
+│   ├── HowItWorks.tsx, InfoSheet.tsx
+│   ├── brand/AppIconArt.tsx  # the app icon artwork
 │   └── songs/                # SongShelf, VinylRecord
 ├── hooks/useMicRecorder.ts   # start() / stop() → WAV, getLevel()
 ├── lib/

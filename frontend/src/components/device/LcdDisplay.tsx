@@ -43,7 +43,7 @@ export function LcdDisplay({ topLine, main, unit, footLeft, footRight, srStatus 
       </p>
 
       <div aria-hidden="true">
-        <div className="font-lcd14 text-[13px] tracking-wider sm:text-sm">
+        <div key={topLine} className="font-lcd14 text-[13px] tracking-wider motion-safe:animate-fade-in sm:text-sm">
           <TopLine text={topLine} />
         </div>
 

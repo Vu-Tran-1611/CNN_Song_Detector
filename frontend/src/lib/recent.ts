@@ -83,4 +83,13 @@ export const recentStore = {
     }
     listeners.forEach((listener) => listener());
   },
+  clear() {
+    cache = EMPTY;
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Storage blocked; the list is still cleared for this visit.
+    }
+    listeners.forEach((listener) => listener());
+  },
 };

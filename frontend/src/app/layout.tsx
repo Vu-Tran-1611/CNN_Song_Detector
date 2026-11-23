@@ -23,6 +23,7 @@ const dseg14 = localFont({
 export const metadata: Metadata = {
   title: "Song Detector",
   description: "Tap listen and a CNN identifies which of 10 songs is playing.",
+  appleWebApp: { capable: true, title: "Song Detector", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
